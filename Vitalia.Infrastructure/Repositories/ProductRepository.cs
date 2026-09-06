@@ -35,7 +35,7 @@ public class ProductRepository : IProductRepository
 
     public void Update(Product product)
     {
-        _context.Products.Update(product);
+        _context.Entry(product).State = EntityState.Modified;
     }
 
     public void Delete(Product product)
