@@ -37,6 +37,27 @@ public class ProductService : IProductService
             ? null
             : MapToResponse(product);
     }
+    
+    public async Task<ProductPagedResponse> GetPagedAsync(
+        int page,
+        int pageSize)
+    {
+        var (items, totalItems) =
+            await _productRepository.GetPagedAsync(page, pageSize);
+
+        var totalPages = (int)Math.Ceiling(
+            (double)totalItems / pageSize
+        );
+
+        return new ProductPagedResponse
+        {
+            Items = items.Select(MapToResponse),
+            Page = page,
+            PageSize = pageSize,
+            TotalItems = totalItems,
+            TotalPages = totalPages
+        };
+    }
 
     public async Task<ProductResponse> AddAsync(ProductRequest request)
     {
