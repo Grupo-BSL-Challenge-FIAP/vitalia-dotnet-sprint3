@@ -31,7 +31,43 @@ public class ProductController(
 
         return Ok(products);
     }
+    
+    /// <summary>
+    /// Retorna uma lista paginada de produtos.
+    /// </summary>
+    /// <param name="page">
+    /// Número da página que será retornada.
+    /// </param>
+    /// <param name="pageSize">
+    /// Quantidade de produtos por página.
+    /// </param>
+    /// <returns>
+    /// Lista paginada contendo os produtos e informações de paginação.
+    /// </returns>
+    /// <response code="200">
+    /// Produtos retornados com sucesso.
+    /// </response>
+    /// <response code="400">
+    /// A página ou o tamanho da página informado é inválido.
+    /// </response>
+    [HttpGet("paged")]
+    [ProducesResponseType(typeof(ProductPagedResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetPaged(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        if (page < 1)
+            return BadRequest("A página deve ser maior que zero.");
 
+        if (pageSize < 1 || pageSize > 100)
+            return BadRequest("O tamanho da página deve estar entre 1 e 100.");
+
+        var products = await productService.GetPagedAsync(page, pageSize);
+
+        return Ok(products);
+    }
+    
     /// <summary>
     /// Busca um produto pelo ID.
     /// </summary>
