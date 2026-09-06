@@ -26,7 +26,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Vitalia.Application\Vitalia.Application.csproj" />
       <ProjectReference Include="..\Vitalia.Domain\Vitalia.Domain.csproj" />
+      <ProjectReference Include="..\Vitalia.Infrastructure\Vitalia.Infrastructure.csproj" />
     </ItemGroup>
 
 </Project>
