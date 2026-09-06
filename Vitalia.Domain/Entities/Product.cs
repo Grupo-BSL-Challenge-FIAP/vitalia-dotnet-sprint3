@@ -39,4 +39,19 @@ public class Product : Entity
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
     }
+    
+    public void Update(
+        long categoryId,
+        string name,
+        string? description,
+        decimal price,
+        int stock)
+    {
+        CategoryId = categoryId;
+        Name = name;
+        Description = description;
+        Price = price;
+        Stock = stock;
+        UpdatedAt = DateTime.UtcNow;
+    }
 }
