@@ -60,6 +60,18 @@ public class ProductService : IProductService
                 $"Produto com ID {id} não encontrado."
             );
         }
+
+        product.Update(
+            request.CategoryId,
+            request.Name,
+            request.Description,
+            request.Price,
+            request.Stock
+        );
+
+        _productRepository.Update(product);
+
+        await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(long id)
