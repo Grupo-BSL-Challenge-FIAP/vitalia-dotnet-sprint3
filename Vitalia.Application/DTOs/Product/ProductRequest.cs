@@ -10,8 +10,7 @@ public class ProductRequest
     [Required(ErrorMessage = "O nome do produto é obrigatório.")]
     [StringLength(
         150,
-        MinimumLength = 2,
-        ErrorMessage = "O nome do produto deve ter entre 2 e 150 caracteres."
+        ErrorMessage = "O nome do produto deve ter no máximo 150 caracteres."
     )]
     public string Name { get; set; } = string.Empty;
 
