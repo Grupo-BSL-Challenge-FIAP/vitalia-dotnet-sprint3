@@ -54,4 +54,10 @@ public class Product : Entity
         Stock = stock;
         UpdatedAt = DateTime.UtcNow;
     }
+    
+    public void DecreaseStock(int quantity)
+    {
+        Stock -= quantity;
+        UpdatedAt = DateTime.UtcNow;
+    }
 }
