@@ -1,17 +1,16 @@
 using Vitalia.Application.DTOs.Product;
-using Vitalia.Domain.Entities;
 
 namespace Vitalia.Application.Interfaces.Services;
 
 public interface IProductService
 {
-    Task<IEnumerable<Product>> GetAllAsync();
+    Task<IEnumerable<ProductResponse>> GetAllAsync();
 
-    Task<Product?> GetByIdAsync(long id);
+    Task<ProductResponse?> GetByIdAsync(long id);
 
-    Task AddAsync(ProductRequest request);
+    Task<ProductResponse> AddAsync(ProductRequest request);
 
-    Task UpdateAsync(Product product);
+    Task UpdateAsync(long id, ProductRequest request);
 
     Task DeleteAsync(long id);
 }
