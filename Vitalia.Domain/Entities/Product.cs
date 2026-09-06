@@ -1,0 +1,20 @@
+using Vitalia.Domain.Common;
+
+namespace Vitalia.Domain.Entities;
+
+public class Product : Entity
+{
+    public string Name { get; private set; } = string.Empty;
+
+    public string? Description { get; private set; }
+
+    public decimal Price { get; private set; }
+
+    public int Stock { get; private set; }
+
+    public string Status { get; private set; } = string.Empty;
+
+    public long CategoryId { get; private set; }
+
+    public Category Category { get; private set; } = null!;
+}
