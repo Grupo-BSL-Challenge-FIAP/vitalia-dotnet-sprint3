@@ -36,21 +36,37 @@ public class Order : Entity
 
     public void Confirm()
     {
+        if (Status != OrderStatus.PENDING)
+            throw new InvalidOperationException(
+                "Somente um pedido pendente pode ser confirmado.");
+
         Status = OrderStatus.CONFIRMED;
     }
 
     public void Process()
     {
+        if (Status != OrderStatus.CONFIRMED)
+            throw new InvalidOperationException(
+                "Somente um pedido confirmado pode ser processado.");
+
         Status = OrderStatus.PROCESSING;
     }
 
     public void Ship()
     {
+        if (Status != OrderStatus.PROCESSING)
+            throw new InvalidOperationException(
+                "Somente um pedido em processamento pode ser enviado.");
+
         Status = OrderStatus.SHIPPED;
     }
 
     public void Deliver()
     {
+        if (Status != OrderStatus.SHIPPED)
+            throw new InvalidOperationException(
+                "Somente um pedido enviado pode ser entregue.");
+
         Status = OrderStatus.DELIVERED;
     }
 
