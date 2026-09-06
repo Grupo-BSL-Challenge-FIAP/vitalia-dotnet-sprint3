@@ -110,6 +110,7 @@ public class CartService : ICartService
         else
         {
             var cartItem = new CartItem(
+                cartId,
                 request.ProductId,
                 request.Quantity,
                 product.Price);
