@@ -17,4 +17,15 @@ public class OrderItem : Entity
     public Order Order { get; private set; } = null!;
 
     public Product Product { get; private set; } = null!;
+
+    public OrderItem(
+        long productId,
+        int quantity,
+        decimal unitPrice)
+    {
+        ProductId = productId;
+        Quantity = quantity;
+        UnitPrice = unitPrice;
+        Subtotal = quantity * unitPrice;
+    }
 }
