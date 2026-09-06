@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Vitalia.API.Data;
+using Vitalia.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace Vitalia.API.Data;
+namespace Vitalia.Infrastructure.Data;
 
 public class VitaliaDbContext : DbContext
 {
