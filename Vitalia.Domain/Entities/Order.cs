@@ -9,7 +9,7 @@ public class Order : Entity
 
     public DateTime OrderDate { get; private set; }
 
-    public OrderStatus Status { get; private set; } = OrderStatus.Pending;
+    public OrderStatus Status { get; private set; } = OrderStatus.PENDING;
 
     public decimal TotalAmount { get; private set; }
 
