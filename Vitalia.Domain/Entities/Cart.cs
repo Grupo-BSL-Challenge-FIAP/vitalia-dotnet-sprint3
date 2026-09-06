@@ -34,6 +34,11 @@ public class Cart : Entity
         Items.Remove(item);
         UpdatedAt = DateTime.UtcNow;
     }
+    
+    public void Touch()
+    {
+        UpdatedAt = DateTime.UtcNow;
+    }
 
     public void Checkout()
     {
