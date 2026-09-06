@@ -37,6 +37,10 @@ public class Cart : Entity
 
     public void Checkout()
     {
+        if (Status != CartStatus.ACTIVE)
+            throw new InvalidOperationException(
+                "Somente um carrinho ativo pode ser finalizado.");
+
         Status = CartStatus.CHECKED_OUT;
         UpdatedAt = DateTime.UtcNow;
     }
