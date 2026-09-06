@@ -121,4 +121,79 @@ public class OrderService : IOrderService
             Items = items
         };
     }
+    
+    public async Task ConfirmAsync(long orderId)
+    {
+        var order = await _orderRepository.GetByIdAsync(orderId);
+
+        if (order is null)
+            throw new KeyNotFoundException(
+                $"Pedido com ID {orderId} não encontrado.");
+
+        order.Confirm();
+
+        _orderRepository.Update(order);
+
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task ProcessAsync(long orderId)
+    {
+        var order = await _orderRepository.GetByIdAsync(orderId);
+
+        if (order is null)
+            throw new KeyNotFoundException(
+                $"Pedido com ID {orderId} não encontrado.");
+
+        order.Process();
+
+        _orderRepository.Update(order);
+
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task ShipAsync(long orderId)
+    {
+        var order = await _orderRepository.GetByIdAsync(orderId);
+
+        if (order is null)
+            throw new KeyNotFoundException(
+                $"Pedido com ID {orderId} não encontrado.");
+
+        order.Ship();
+
+        _orderRepository.Update(order);
+
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task DeliverAsync(long orderId)
+    {
+        var order = await _orderRepository.GetByIdAsync(orderId);
+
+        if (order is null)
+            throw new KeyNotFoundException(
+                $"Pedido com ID {orderId} não encontrado.");
+
+        order.Deliver();
+
+        _orderRepository.Update(order);
+
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task CancelAsync(long orderId)
+    {
+        var order = await _orderRepository.GetByIdAsync(orderId);
+
+        if (order is null)
+            throw new KeyNotFoundException(
+                $"Pedido com ID {orderId} não encontrado.");
+
+        order.Cancel();
+
+        _orderRepository.Update(order);
+
+        await _unitOfWork.SaveChangesAsync();
+    }
 }
