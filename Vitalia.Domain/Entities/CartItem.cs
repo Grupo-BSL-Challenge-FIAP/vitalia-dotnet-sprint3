@@ -15,4 +15,19 @@ public class CartItem : Entity
     public Cart Cart { get; private set; } = null!;
 
     public Product Product { get; private set; } = null!;
+
+    public CartItem(
+        long productId,
+        int quantity,
+        decimal unitPrice)
+    {
+        ProductId = productId;
+        Quantity = quantity;
+        UnitPrice = unitPrice;
+    }
+
+    public void UpdateQuantity(int quantity)
+    {
+        Quantity = quantity;
+    }
 }
