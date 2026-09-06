@@ -8,13 +8,16 @@ namespace Vitalia.Application.Services;
 public class ProductService : IProductService
 {
     private readonly IProductRepository _productRepository;
+    private readonly ICategoryRepository _categoryRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public ProductService(
         IProductRepository productRepository,
+        ICategoryRepository categoryRepository,
         IUnitOfWork unitOfWork)
     {
         _productRepository = productRepository;
+        _categoryRepository = categoryRepository;
         _unitOfWork = unitOfWork;
     }
 
@@ -36,6 +39,16 @@ public class ProductService : IProductService
 
     public async Task<ProductResponse> AddAsync(ProductRequest request)
     {
+        var categoryExists =
+            await _categoryRepository.ExistsAsync(request.CategoryId);
+
+        if (!categoryExists)
+        {
+            throw new KeyNotFoundException(
+                $"Categoria com ID {request.CategoryId} não encontrada."
+            );
+        }
+
         var product = new Product(
             request.CategoryId,
             request.Name,
@@ -52,6 +65,16 @@ public class ProductService : IProductService
 
     public async Task UpdateAsync(long id, ProductRequest request)
     {
+        var categoryExists =
+            await _categoryRepository.ExistsAsync(request.CategoryId);
+
+        if (!categoryExists)
+        {
+            throw new KeyNotFoundException(
+                $"Categoria com ID {request.CategoryId} não encontrada."
+            );
+        }
+
         var product = await _productRepository.GetByIdAsync(id);
 
         if (product is null)
