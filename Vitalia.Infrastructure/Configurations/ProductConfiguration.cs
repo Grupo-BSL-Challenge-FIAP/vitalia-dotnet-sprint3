@@ -40,12 +40,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 
         builder.Property(p => p.Status)
             .HasColumnName("STATUS")
-            .HasConversion(
-                status => status == ProductStatus.ACTIVE ? "ACTIVE" : "INACTIVE",
-                status => status == "ACTIVE"
-                    ? ProductStatus.ACTIVE
-                    : ProductStatus.INACTIVE
-            )
+            .HasConversion<string>()
             .HasMaxLength(20)
             .IsRequired();
 

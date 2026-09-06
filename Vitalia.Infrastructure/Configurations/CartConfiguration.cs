@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Vitalia.Domain.Entities;
+using Vitalia.Domain.Enums;
 
 namespace Vitalia.Infrastructure.Configurations;
 
@@ -21,6 +22,7 @@ public class CartConfiguration : IEntityTypeConfiguration<Cart>
 
         builder.Property(c => c.Status)
             .HasColumnName("STATUS")
+            .HasConversion<string>()
             .HasMaxLength(20)
             .IsRequired();
 
@@ -31,8 +33,5 @@ public class CartConfiguration : IEntityTypeConfiguration<Cart>
         builder.Property(c => c.UpdatedAt)
             .HasColumnName("UPDATED_AT")
             .IsRequired();
-
-        builder.Property(c => c.Status)
-            .HasConversion<string>();
     }
 }
