@@ -10,4 +10,9 @@ public class VitaliaDbContext : DbContext
     }
 
     public DbSet<Category> Categories { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(VitaliaDbContext).Assembly);
+    }
 }
