@@ -17,10 +17,12 @@ public class CartItem : Entity
     public Product Product { get; private set; } = null!;
 
     public CartItem(
+        long cartId,
         long productId,
         int quantity,
         decimal unitPrice)
     {
+        CartId = cartId;
         ProductId = productId;
         Quantity = quantity;
         UnitPrice = unitPrice;
