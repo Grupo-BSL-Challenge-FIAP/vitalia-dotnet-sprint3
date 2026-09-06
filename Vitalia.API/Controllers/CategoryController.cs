@@ -89,11 +89,6 @@ public class CategoryController(
     public async Task<IActionResult> Create(
         [FromBody] CategoryRequest request)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
         logger.LogInformation(
             "Iniciando cadastro da categoria: {CategoryName}",
             request.Name
@@ -133,11 +128,6 @@ public class CategoryController(
         long id,
         [FromBody] CategoryRequest request)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
         logger.LogInformation(
             "Atualizando categoria: {CategoryId}",
             id
