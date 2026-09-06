@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Vitalia.Application.Interfaces.Repositories;
 using Vitalia.Domain.Entities;
+using Vitalia.Domain.Enums;
 using Vitalia.Infrastructure.Data;
 
 namespace Vitalia.Infrastructure.Repositories;
@@ -26,6 +27,22 @@ public class ProductRepository : IProductRepository
         return await _context.Products
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == id);
+    }
+
+    public async Task<IEnumerable<Product>> GetByCategoryIdAsync(long categoryId)
+    {
+        return await _context.Products
+            .AsNoTracking()
+            .Where(p => p.CategoryId == categoryId)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Product>> GetByStatusAsync(ProductStatus status)
+    {
+        return await _context.Products
+            .AsNoTracking()
+            .Where(p => p.Status == status)
+            .ToListAsync();
     }
 
     public async Task AddAsync(Product product)
