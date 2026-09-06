@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Vitalia.Domain.Entities;
+using Vitalia.Domain.Enums;
 
 namespace Vitalia.Infrastructure.Configurations;
 
@@ -39,6 +40,12 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 
         builder.Property(p => p.Status)
             .HasColumnName("STATUS")
+            .HasConversion(
+                status => status == ProductStatus.ACTIVE ? "ACTIVE" : "INACTIVE",
+                status => status == "ACTIVE"
+                    ? ProductStatus.ACTIVE
+                    : ProductStatus.INACTIVE
+            )
             .HasMaxLength(20)
             .IsRequired();
 
