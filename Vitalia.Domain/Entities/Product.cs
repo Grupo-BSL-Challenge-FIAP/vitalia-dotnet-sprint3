@@ -1,4 +1,5 @@
 using Vitalia.Domain.Common;
+using Vitalia.Domain.Enums;
 
 namespace Vitalia.Domain.Entities;
 
@@ -12,7 +13,7 @@ public class Product : Entity
 
     public int Stock { get; private set; }
 
-    public string Status { get; private set; } = "ACTIVE";
+    public ProductStatus Status { get; private set; } = ProductStatus.Active;
 
     public long CategoryId { get; private set; }
 
