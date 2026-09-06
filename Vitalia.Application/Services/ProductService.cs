@@ -1,3 +1,4 @@
+using Vitalia.Application.DTOs.Product;
 using Vitalia.Application.Interfaces.Repositories;
 using Vitalia.Application.Interfaces.Services;
 using Vitalia.Domain.Entities;
@@ -23,8 +24,21 @@ public class ProductService : IProductService
         return await _productRepository.GetByIdAsync(id);
     }
 
-    public async Task AddAsync(Product product)
+    public Task AddAsync(Product product)
     {
+        throw new NotImplementedException();
+    }
+
+    public async Task AddAsync(ProductRequest request)
+    {
+        var product = new Product(
+            request.CategoryId,
+            request.Name,
+            request.Description,
+            request.Price,
+            request.Stock
+        );
+
         await _productRepository.AddAsync(product);
     }
 
