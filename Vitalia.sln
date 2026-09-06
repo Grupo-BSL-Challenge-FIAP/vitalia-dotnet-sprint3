@@ -2,6 +2,12 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vitalia.API", "Vitalia.API\Vitalia.API.csproj", "{915177AB-AE26-4BEC-BEDF-82D29B6BCC5A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vitalia.Domain", "Vitalia.Domain\Vitalia.Domain.csproj", "{C42DA5AA-6249-47CC-8E20-C1D7EF0AE46F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vitalia.Application", "Vitalia.Application\Vitalia.Application.csproj", "{99097F8C-3F66-4C47-A60F-7CBB72609B61}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vitalia.Infrastructure", "Vitalia.Infrastructure\Vitalia.Infrastructure.csproj", "{133D96E8-CE69-479E-84C8-7056AE5B4BF7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +18,17 @@ Global
 		{915177AB-AE26-4BEC-BEDF-82D29B6BCC5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{915177AB-AE26-4BEC-BEDF-82D29B6BCC5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{915177AB-AE26-4BEC-BEDF-82D29B6BCC5A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C42DA5AA-6249-47CC-8E20-C1D7EF0AE46F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C42DA5AA-6249-47CC-8E20-C1D7EF0AE46F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C42DA5AA-6249-47CC-8E20-C1D7EF0AE46F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C42DA5AA-6249-47CC-8E20-C1D7EF0AE46F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99097F8C-3F66-4C47-A60F-7CBB72609B61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99097F8C-3F66-4C47-A60F-7CBB72609B61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99097F8C-3F66-4C47-A60F-7CBB72609B61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99097F8C-3F66-4C47-A60F-7CBB72609B61}.Release|Any CPU.Build.0 = Release|Any CPU
+		{133D96E8-CE69-479E-84C8-7056AE5B4BF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{133D96E8-CE69-479E-84C8-7056AE5B4BF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{133D96E8-CE69-479E-84C8-7056AE5B4BF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{133D96E8-CE69-479E-84C8-7056AE5B4BF7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
