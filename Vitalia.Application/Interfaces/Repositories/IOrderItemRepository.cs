@@ -1,6 +1,8 @@
+using Vitalia.Domain.Entities;
+
 namespace Vitalia.Application.Interfaces.Repositories;
 
-public class IOrderItemRepository
+public interface IOrderItemRepository
 {
-    
+    Task AddAsync(OrderItem orderItem);
 }
