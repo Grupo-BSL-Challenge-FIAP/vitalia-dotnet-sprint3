@@ -23,6 +23,14 @@ public class OrderItem : Entity
         int quantity,
         decimal unitPrice)
     {
+        if (quantity <= 0)
+            throw new ArgumentException(
+                "A quantidade deve ser maior que zero.");
+
+        if (unitPrice <= 0)
+            throw new ArgumentException(
+                "O preço unitário deve ser maior que zero.");
+
         ProductId = productId;
         Quantity = quantity;
         UnitPrice = unitPrice;
