@@ -8,10 +8,14 @@ namespace Vitalia.Application.Services;
 public class ProductService : IProductService
 {
     private readonly IProductRepository _productRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public ProductService(IProductRepository productRepository)
+    public ProductService(
+        IProductRepository productRepository,
+        IUnitOfWork unitOfWork)
     {
         _productRepository = productRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<IEnumerable<Product>> GetAllAsync()
@@ -22,11 +26,6 @@ public class ProductService : IProductService
     public async Task<Product?> GetByIdAsync(long id)
     {
         return await _productRepository.GetByIdAsync(id);
-    }
-
-    public Task AddAsync(Product product)
-    {
-        throw new NotImplementedException();
     }
 
     public async Task AddAsync(ProductRequest request)
@@ -40,6 +39,7 @@ public class ProductService : IProductService
         );
 
         await _productRepository.AddAsync(product);
+        await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(Product product)
