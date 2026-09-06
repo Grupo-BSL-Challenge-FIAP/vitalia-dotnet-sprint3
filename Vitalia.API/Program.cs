@@ -6,6 +6,7 @@ using Vitalia.Application.Interfaces.Repositories;
 using Vitalia.Application.Interfaces.Services;
 using Vitalia.Application.Services;
 using Vitalia.Infrastructure.Repositories;
+using Vitalia.API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,6 +59,7 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 var app = builder.Build();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
