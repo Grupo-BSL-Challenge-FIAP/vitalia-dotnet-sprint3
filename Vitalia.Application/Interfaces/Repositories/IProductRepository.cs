@@ -1,6 +1,6 @@
 using Vitalia.Domain.Entities;
 
-namespace Vitalia.Application.Interfaces;
+namespace Vitalia.Application.Interfaces.Repositories;
 
 public interface IProductRepository
 {
