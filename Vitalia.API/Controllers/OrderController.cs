@@ -78,4 +78,74 @@ public class OrderController(
 
         return Ok(order);
     }
+    
+    /// <summary>
+    /// Confirma um pedido que está aguardando confirmação.
+    /// </summary>
+    /// <param name="id">Identificador do pedido.</param>
+    /// <returns>Retorna 204 quando o pedido é confirmado.</returns>
+    [HttpPut("{id:long}/confirm")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Confirm(long id)
+    {
+        await orderService.ConfirmAsync(id);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Inicia o processamento de um pedido confirmado.
+    /// </summary>
+    /// <param name="id">Identificador do pedido.</param>
+    /// <returns>Retorna 204 quando o pedido é colocado em processamento.</returns>
+    [HttpPut("{id:long}/process")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Process(long id)
+    {
+        await orderService.ProcessAsync(id);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Marca um pedido em processamento como enviado.
+    /// </summary>
+    /// <param name="id">Identificador do pedido.</param>
+    /// <returns>Retorna 204 quando o pedido é enviado.</returns>
+    [HttpPut("{id:long}/ship")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Ship(long id)
+    {
+        await orderService.ShipAsync(id);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Marca um pedido enviado como entregue.
+    /// </summary>
+    /// <param name="id">Identificador do pedido.</param>
+    /// <returns>Retorna 204 quando o pedido é marcado como entregue.</returns>
+    [HttpPut("{id:long}/deliver")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Deliver(long id)
+    {
+        await orderService.DeliverAsync(id);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Cancela um pedido.
+    /// </summary>
+    /// <param name="id">Identificador do pedido.</param>
+    /// <returns>Retorna 204 quando o pedido é cancelado.</returns>
+    [HttpPut("{id:long}/cancel")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Cancel(long id)
+    {
+        await orderService.CancelAsync(id);
+        return NoContent();
+    }
 }
