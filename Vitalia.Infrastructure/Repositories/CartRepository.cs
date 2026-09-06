@@ -42,7 +42,7 @@ public class CartRepository : ICartRepository
 
     public void Update(Cart cart)
     {
-        _context.Carts.Update(cart);
+        _context.Entry(cart).State = EntityState.Modified;
     }
 
     public async Task<bool> ExistsAsync(long id)
