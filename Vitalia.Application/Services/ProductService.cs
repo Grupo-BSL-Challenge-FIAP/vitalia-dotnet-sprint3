@@ -18,17 +18,23 @@ public class ProductService : IProductService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<IEnumerable<Product>> GetAllAsync()
+    public async Task<IEnumerable<ProductResponse>> GetAllAsync()
     {
-        return await _productRepository.GetAllAsync();
+        var products = await _productRepository.GetAllAsync();
+
+        return products.Select(MapToResponse);
     }
 
-    public async Task<Product?> GetByIdAsync(long id)
+    public async Task<ProductResponse?> GetByIdAsync(long id)
     {
-        return await _productRepository.GetByIdAsync(id);
+        var product = await _productRepository.GetByIdAsync(id);
+
+        return product is null
+            ? null
+            : MapToResponse(product);
     }
 
-    public async Task AddAsync(ProductRequest request)
+    public async Task<ProductResponse> AddAsync(ProductRequest request)
     {
         var product = new Product(
             request.CategoryId,
@@ -40,18 +46,20 @@ public class ProductService : IProductService
 
         await _productRepository.AddAsync(product);
         await _unitOfWork.SaveChangesAsync();
+
+        return MapToResponse(product);
     }
 
-    public async Task UpdateAsync(Product product)
+    public async Task UpdateAsync(long id, ProductRequest request)
     {
-        if (!await _productRepository.ExistsAsync(product.Id))
+        var product = await _productRepository.GetByIdAsync(id);
+
+        if (product is null)
         {
             throw new KeyNotFoundException(
-                $"Produto com ID {product.Id} não encontrado."
+                $"Produto com ID {id} não encontrado."
             );
         }
-
-        _productRepository.Update(product);
     }
 
     public async Task DeleteAsync(long id)
@@ -66,5 +74,23 @@ public class ProductService : IProductService
         }
 
         _productRepository.Delete(product);
+
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    private static ProductResponse MapToResponse(Product product)
+    {
+        return new ProductResponse
+        {
+            Id = product.Id,
+            CategoryId = product.CategoryId,
+            Name = product.Name,
+            Description = product.Description,
+            Price = product.Price,
+            Stock = product.Stock,
+            Status = product.Status.ToString(),
+            CreatedAt = product.CreatedAt,
+            UpdatedAt = product.UpdatedAt
+        };
     }
 }
