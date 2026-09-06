@@ -2,10 +2,10 @@ namespace Vitalia.Domain.Enums;
 
 public enum OrderStatus
 {
-    Pending,
-    Confirmed,
-    Processing,
-    Shipped,
-    Delivered,
-    Cancelled
+    PENDING,
+    CONFIRMED,
+    PROCESSING,
+    SHIPPED,
+    DELIVERED,
+    CANCELLED
 }
