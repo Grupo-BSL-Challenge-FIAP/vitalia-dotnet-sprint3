@@ -30,6 +30,11 @@ public class CartItem : Entity
 
     public void UpdateQuantity(int quantity)
     {
+        if (quantity <= 0)
+            throw new ArgumentException(
+                "A quantidade deve ser maior que zero."
+            );
+
         Quantity = quantity;
     }
 }
