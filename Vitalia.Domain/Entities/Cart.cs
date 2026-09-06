@@ -12,4 +12,7 @@ public class Cart : Entity
     public DateTime CreatedAt { get; private set; }
 
     public DateTime UpdatedAt { get; private set; }
+    
+    
+    public ICollection<CartItem> Items { get; private set; } = new List<CartItem>();
 }
