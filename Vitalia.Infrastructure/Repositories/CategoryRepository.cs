@@ -45,7 +45,10 @@ public class CategoryRepository : ICategoryRepository
 
     public async Task<bool> ExistsAsync(long id)
     {
-        return await _context.Categories
-            .AnyAsync(c => c.Id == id);
+        var category = await _context.Categories
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == id);
+
+        return category is not null;
     }
 }
