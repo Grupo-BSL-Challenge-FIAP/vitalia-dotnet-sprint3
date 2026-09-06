@@ -12,9 +12,13 @@ public class Product : Entity
 
     public int Stock { get; private set; }
 
-    public string Status { get; private set; } = string.Empty;
+    public string Status { get; private set; } = "ACTIVE";
 
     public long CategoryId { get; private set; }
 
     public Category Category { get; private set; } = null!;
+
+    public DateTime CreatedAt { get; private set; }
+
+    public DateTime UpdatedAt { get; private set; }
 }
