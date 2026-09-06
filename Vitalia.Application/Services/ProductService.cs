@@ -2,6 +2,7 @@ using Vitalia.Application.DTOs.Product;
 using Vitalia.Application.Interfaces.Repositories;
 using Vitalia.Application.Interfaces.Services;
 using Vitalia.Domain.Entities;
+using Vitalia.Domain.Enums;
 
 namespace Vitalia.Application.Services;
 
@@ -127,5 +128,19 @@ public class ProductService : IProductService
             CreatedAt = product.CreatedAt,
             UpdatedAt = product.UpdatedAt
         };
+    }
+    
+    public async Task<IEnumerable<ProductResponse>> GetByCategoryIdAsync(long categoryId)
+    {
+        var products = await _productRepository.GetByCategoryIdAsync(categoryId);
+
+        return products.Select(MapToResponse);
+    }
+
+    public async Task<IEnumerable<ProductResponse>> GetByStatusAsync(ProductStatus status)
+    {
+        var products = await _productRepository.GetByStatusAsync(status);
+
+        return products.Select(MapToResponse);
     }
 }
