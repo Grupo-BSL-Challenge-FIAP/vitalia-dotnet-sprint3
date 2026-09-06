@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using System.Net;
 using System.Text.Json;
 
@@ -26,7 +27,8 @@ public class ExceptionHandlingMiddleware
         {
             _logger.LogError(
                 exception,
-                "Ocorreu um erro não tratado durante a requisição.");
+                "Ocorreu um erro não tratado durante a requisição. InnerException: {InnerException}",
+                exception.InnerException?.Message);
 
             await HandleExceptionAsync(context, exception);
         }
@@ -41,6 +43,8 @@ public class ExceptionHandlingMiddleware
             KeyNotFoundException => HttpStatusCode.NotFound,
             ArgumentException => HttpStatusCode.BadRequest,
             InvalidOperationException => HttpStatusCode.Conflict,
+            DbUpdateException dbException when IsForeignKeyViolation(dbException)
+                => HttpStatusCode.Conflict,
             _ => HttpStatusCode.InternalServerError
         };
 
@@ -52,11 +56,28 @@ public class ExceptionHandlingMiddleware
             type = $"https://httpstatuses.com/{(int)statusCode}",
             title = GetTitle(statusCode),
             status = (int)statusCode,
-            detail = exception.Message
+            detail = GetDetail(exception)
         };
 
         await context.Response.WriteAsync(
             JsonSerializer.Serialize(problemDetails));
+    }
+
+    private static bool IsForeignKeyViolation(
+        DbUpdateException exception)
+    {
+        return exception.InnerException?.Message.Contains("ORA-02292") == true;
+    }
+
+    private static string GetDetail(Exception exception)
+    {
+        if (exception is DbUpdateException dbException &&
+            IsForeignKeyViolation(dbException))
+        {
+            return "Não é possível excluir a categoria porque existem produtos associados a ela.";
+        }
+
+        return exception.Message;
     }
 
     private static string GetTitle(HttpStatusCode statusCode)
