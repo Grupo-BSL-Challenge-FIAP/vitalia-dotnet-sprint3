@@ -21,9 +21,12 @@
       <Folder Include="Controllers\" />
       <Folder Include="Exceptions\" />
       <Folder Include="Middleware\" />
-      <Folder Include="Models\" />
       <Folder Include="Repositories\" />
       <Folder Include="Services\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Vitalia.Domain\Vitalia.Domain.csproj" />
     </ItemGroup>
 
 </Project>
