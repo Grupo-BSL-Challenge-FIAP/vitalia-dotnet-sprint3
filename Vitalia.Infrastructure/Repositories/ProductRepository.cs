@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Vitalia.Application.Interfaces;
+using Vitalia.Application.Interfaces.Repositories;
 using Vitalia.Domain.Entities;
 using Vitalia.Infrastructure.Data;
 

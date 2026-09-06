@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Vitalia.Infrastructure.Data;
-using Vitalia.Application.Interfaces;
+using Vitalia.Application.Interfaces.Repositories;
 using Vitalia.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
