@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Vitalia.Application.DTOs.Product;
 using Vitalia.Application.Interfaces.Services;
+using Vitalia.Domain.Enums;
 
 namespace Vitalia.API.Controllers;
 
@@ -62,6 +63,48 @@ public class ProductController(
         }
 
         return Ok(product);
+    }
+    
+    /// <summary>
+    /// Lista os produtos de uma determinada categoria.
+    /// </summary>
+    /// <param name="categoryId">Identificador da categoria.</param>
+    /// <response code="200">Produtos encontrados.</response>
+    /// <response code="500">Erro interno do servidor.</response>
+    [HttpGet("category/{categoryId:long}")]
+    [ProducesResponseType(typeof(IEnumerable<ProductResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetByCategory(long categoryId)
+    {
+        logger.LogInformation(
+            "Listando produtos da categoria: {CategoryId}",
+            categoryId
+        );
+
+        var products = await productService.GetByCategoryIdAsync(categoryId);
+
+        return Ok(products);
+    }
+    
+    /// <summary>
+    /// Lista os produtos de acordo com o status.
+    /// </summary>
+    /// <param name="status">Status do produto.</param>
+    /// <response code="200">Produtos encontrados.</response>
+    /// <response code="500">Erro interno do servidor.</response>
+    [HttpGet("status/{status}")]
+    [ProducesResponseType(typeof(IEnumerable<ProductResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetByStatus(ProductStatus status)
+    {
+        logger.LogInformation(
+            "Listando produtos com status: {Status}",
+            status
+        );
+
+        var products = await productService.GetByStatusAsync(status);
+
+        return Ok(products);
     }
 
     /// <summary>
