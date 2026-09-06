@@ -7,7 +7,7 @@ public class Cart : Entity
 {
     public long UserId { get; private set; }
 
-    public CartStatus Status { get; private set; } = CartStatus.Active;
+    public CartStatus Status { get; private set; } = CartStatus.ACTIVE;
 
     public DateTime CreatedAt { get; private set; }
 

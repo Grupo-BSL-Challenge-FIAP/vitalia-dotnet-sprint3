@@ -13,7 +13,7 @@ public class Product : Entity
 
     public int Stock { get; private set; }
 
-    public ProductStatus Status { get; private set; } = ProductStatus.Active;
+    public ProductStatus Status { get; private set; } = ProductStatus.ACTIVE;
 
     public long CategoryId { get; private set; }
 
