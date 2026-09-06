@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Vitalia.Infrastructure.Data;
 using Vitalia.Application.Interfaces.Repositories;
+using Vitalia.Application.Interfaces.Services;
+using Vitalia.Application.Services;
 using Vitalia.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +19,7 @@ builder.Services.AddDbContext<VitaliaDbContext>(options =>
     options.UseOracle(connectionString));
 
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IProductService, ProductService>();
 
 var app = builder.Build();
 
