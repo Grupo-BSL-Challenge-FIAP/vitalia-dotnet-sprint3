@@ -2,6 +2,7 @@ using Vitalia.Application.DTOs.Cart;
 using Vitalia.Application.Interfaces.Repositories;
 using Vitalia.Application.Interfaces.Services;
 using Vitalia.Domain.Entities;
+using Vitalia.Domain.Enums;
 
 namespace Vitalia.Application.Services;
 
@@ -62,6 +63,13 @@ public class CartService : ICartService
             );
         }
 
+        if (cart.Status != CartStatus.ACTIVE)
+        {
+            throw new InvalidOperationException(
+                "Somente um carrinho ativo pode ser alterado."
+            );
+        }
+
         var product = await _productRepository
             .GetByIdAsync(request.ProductId);
 
@@ -69,6 +77,13 @@ public class CartService : ICartService
         {
             throw new KeyNotFoundException(
                 $"Produto com ID {request.ProductId} não encontrado."
+            );
+        }
+
+        if (product.Status != ProductStatus.ACTIVE)
+        {
+            throw new InvalidOperationException(
+                "O produto não está disponível para venda."
             );
         }
 
@@ -118,6 +133,8 @@ public class CartService : ICartService
             await _cartItemRepository.AddAsync(cartItem);
         }
 
+        cart.Touch();
+
         await _unitOfWork.SaveChangesAsync();
 
         var updatedCart = await _cartRepository.GetByIdAsync(cartId);
@@ -146,12 +163,27 @@ public class CartService : ICartService
             );
         }
 
-        var product = await _productRepository.GetByIdAsync(productId);
+        if (cart.Status != CartStatus.ACTIVE)
+        {
+            throw new InvalidOperationException(
+                "Somente um carrinho ativo pode ser alterado."
+            );
+        }
+
+        var product = await _productRepository
+            .GetByIdAsync(productId);
 
         if (product is null)
         {
             throw new KeyNotFoundException(
                 $"Produto com ID {productId} não encontrado."
+            );
+        }
+
+        if (product.Status != ProductStatus.ACTIVE)
+        {
+            throw new InvalidOperationException(
+                "O produto não está disponível para venda."
             );
         }
 
@@ -163,7 +195,9 @@ public class CartService : ICartService
         }
 
         var item = await _cartItemRepository
-            .GetByCartAndProductAsync(cartId, productId);
+            .GetByCartAndProductAsync(
+                cartId,
+                productId);
 
         if (item is null)
         {
@@ -176,6 +210,8 @@ public class CartService : ICartService
 
         _cartItemRepository.Update(item);
 
+        cart.Touch();
+
         await _unitOfWork.SaveChangesAsync();
 
         var updatedCart = await _cartRepository.GetByIdAsync(cartId);
@@ -187,8 +223,26 @@ public class CartService : ICartService
         long cartId,
         long productId)
     {
+        var cart = await _cartRepository.GetByIdAsync(cartId);
+
+        if (cart is null)
+        {
+            throw new KeyNotFoundException(
+                $"Carrinho com ID {cartId} não encontrado."
+            );
+        }
+
+        if (cart.Status != CartStatus.ACTIVE)
+        {
+            throw new InvalidOperationException(
+                "Somente um carrinho ativo pode ser alterado."
+            );
+        }
+
         var item = await _cartItemRepository
-            .GetByCartAndProductAsync(cartId, productId);
+            .GetByCartAndProductAsync(
+                cartId,
+                productId);
 
         if (item is null)
         {
@@ -198,6 +252,8 @@ public class CartService : ICartService
         }
 
         _cartItemRepository.Delete(item);
+
+        cart.Touch();
 
         await _unitOfWork.SaveChangesAsync();
     }
