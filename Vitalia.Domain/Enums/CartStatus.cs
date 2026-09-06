@@ -2,7 +2,7 @@ namespace Vitalia.Domain.Enums;
 
 public enum CartStatus
 {
-    Active,
-    CheckedOut,
-    Abandoned
+    ACTIVE,
+    CHECKED_OUT,
+    ABANDONED
 }
