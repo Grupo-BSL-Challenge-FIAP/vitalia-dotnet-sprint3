@@ -5,7 +5,7 @@ namespace Vitalia.Domain.Entities;
 
 public class Product : Entity
 {
-    public string Name { get; private set; } = string.Empty;
+    public string Name { get; private set; }
 
     public string? Description { get; private set; }
 
@@ -13,7 +13,7 @@ public class Product : Entity
 
     public int Stock { get; private set; }
 
-    public ProductStatus Status { get; private set; } = ProductStatus.ACTIVE;
+    public ProductStatus Status { get; private set; }
 
     public long CategoryId { get; private set; }
 
@@ -22,4 +22,21 @@ public class Product : Entity
     public DateTime CreatedAt { get; private set; }
 
     public DateTime UpdatedAt { get; private set; }
+
+    public Product(
+        long categoryId,
+        string name,
+        string? description,
+        decimal price,
+        int stock)
+    {
+        CategoryId = categoryId;
+        Name = name;
+        Description = description;
+        Price = price;
+        Stock = stock;
+        Status = ProductStatus.ACTIVE;
+        CreatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
+    }
 }
