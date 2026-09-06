@@ -43,60 +43,74 @@ public class OrderService : IOrderService
 
     public async Task<OrderResponse> CheckoutAsync(long cartId)
     {
-        var cart = await _cartRepository.GetByIdAsync(cartId);
+        await _unitOfWork.BeginTransactionAsync();
 
-        if (cart is null)
-            throw new KeyNotFoundException(
-                $"Carrinho com ID {cartId} não encontrado.");
-
-        if (cart.Status != Domain.Enums.CartStatus.ACTIVE)
-            throw new InvalidOperationException(
-                "O carrinho não está ativo.");
-
-        if (!cart.Items.Any())
-            throw new InvalidOperationException(
-                "Não é possível finalizar um carrinho vazio.");
-
-        var order = new Domain.Entities.Order(cart.UserId);
-
-        decimal total = 0;
-
-        foreach (var cartItem in cart.Items)
+        try
         {
-            var product = await _productRepository.GetByIdAsync(
-                cartItem.ProductId);
+            var cart = await _cartRepository.GetByIdAsync(cartId);
 
-            if (product is null)
+            if (cart is null)
                 throw new KeyNotFoundException(
-                    $"Produto com ID {cartItem.ProductId} não encontrado.");
+                    $"Carrinho com ID {cartId} não encontrado.");
 
-            if (cartItem.Quantity > product.Stock)
+            if (cart.Status != Domain.Enums.CartStatus.ACTIVE)
                 throw new InvalidOperationException(
-                    $"Estoque insuficiente para o produto '{product.Name}'.");
+                    "O carrinho não está ativo.");
 
-            var orderItem = new Domain.Entities.OrderItem(
-                product.Id,
-                cartItem.Quantity,
-                cartItem.UnitPrice);
+            if (!cart.Items.Any())
+                throw new InvalidOperationException(
+                    "Não é possível finalizar um carrinho vazio.");
 
-            order.AddItem(orderItem);
+            var order = new Domain.Entities.Order(cart.UserId);
 
-            total += orderItem.Subtotal;
+            decimal total = 0;
 
-            product.DecreaseStock(cartItem.Quantity);
-            _productRepository.Update(product);
+            foreach (var cartItem in cart.Items)
+            {
+                var product = await _productRepository.GetByIdAsync(
+                    cartItem.ProductId);
+
+                if (product is null)
+                    throw new KeyNotFoundException(
+                        $"Produto com ID {cartItem.ProductId} não encontrado.");
+
+                if (cartItem.Quantity > product.Stock)
+                    throw new InvalidOperationException(
+                        $"Estoque insuficiente para o produto '{product.Name}'.");
+
+                var orderItem = new Domain.Entities.OrderItem(
+                    product.Id,
+                    cartItem.Quantity,
+                    cartItem.UnitPrice);
+
+                order.AddItem(orderItem);
+
+                total += orderItem.Subtotal;
+
+                product.DecreaseStock(cartItem.Quantity);
+
+                _productRepository.Update(product);
+            }
+
+            order.SetTotalAmount(total);
+
+            cart.Checkout();
+
+            _cartRepository.Update(cart);
+
+            await _orderRepository.AddAsync(order);
+
+            await _unitOfWork.SaveChangesAsync();
+
+            await _unitOfWork.CommitTransactionAsync();
+
+            return MapToResponse(order);
         }
-
-        order.SetTotalAmount(total);
-
-        cart.Checkout();
-        _cartRepository.Update(cart);
-
-        await _orderRepository.AddAsync(order);
-
-        await _unitOfWork.SaveChangesAsync();
-
-        return MapToResponse(order);
+        catch
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+            throw;
+        }
     }
 
     private static OrderResponse MapToResponse(Order order)
