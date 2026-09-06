@@ -77,11 +77,6 @@ public class ProductController(
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Create([FromBody] ProductRequest request)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
         logger.LogInformation(
             "Iniciando cadastro do produto: {ProductName}",
             request.Name
@@ -119,11 +114,6 @@ public class ProductController(
         long id,
         [FromBody] ProductRequest request)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
         logger.LogInformation(
             "Atualizando produto: {ProductId}",
             id
