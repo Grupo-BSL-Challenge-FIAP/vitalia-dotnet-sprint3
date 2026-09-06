@@ -56,6 +56,18 @@ public class Order : Entity
 
     public void Cancel()
     {
+        if (Status == OrderStatus.SHIPPED)
+            throw new InvalidOperationException(
+                "Um pedido enviado não pode ser cancelado.");
+
+        if (Status == OrderStatus.DELIVERED)
+            throw new InvalidOperationException(
+                "Um pedido entregue não pode ser cancelado.");
+
+        if (Status == OrderStatus.CANCELLED)
+            throw new InvalidOperationException(
+                "O pedido já está cancelado.");
+
         Status = OrderStatus.CANCELLED;
     }
 }
