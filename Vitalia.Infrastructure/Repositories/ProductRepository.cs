@@ -45,6 +45,24 @@ public class ProductRepository : IProductRepository
             .ToListAsync();
     }
 
+    public async Task<(IEnumerable<Product> Items, int TotalItems)> GetPagedAsync(
+        int page,
+        int pageSize)
+    {
+        var query = _context.Products
+            .AsNoTracking()
+            .OrderBy(p => p.Id);
+
+        var totalItems = await query.CountAsync();
+
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (items, totalItems);
+    }
+
     public async Task AddAsync(Product product)
     {
         await _context.Products.AddAsync(product);
