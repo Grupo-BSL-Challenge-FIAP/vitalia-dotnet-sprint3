@@ -131,7 +131,32 @@ var app = builder.Build();
 
 app.UseExceptionHandler();
 app.UseOpenTelemetryPrometheusScrapingEndpoint();
-app.UseSerilogRequestLogging();
+app.UseSerilogRequestLogging(options =>
+{
+    options.MessageTemplate =
+        "HTTP {RequestMethod} {RequestPath} " +
+        "responded {StatusCode} in {Elapsed:0.0000} ms | " +
+        "TraceId: {TraceId} | " +
+        "RequestId: {RequestId}";
+
+    options.EnrichDiagnosticContext =
+        (diagnosticContext, httpContext) =>
+        {
+            var traceId =
+                System.Diagnostics.Activity.Current?
+                    .TraceId
+                    .ToString()
+                ?? httpContext.TraceIdentifier;
+
+            diagnosticContext.Set(
+                "TraceId",
+                traceId);
+
+            diagnosticContext.Set(
+                "RequestId",
+                httpContext.TraceIdentifier);
+        };
+});
 
 if (app.Environment.IsDevelopment())
 {
