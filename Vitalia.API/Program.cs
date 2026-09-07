@@ -23,13 +23,15 @@ builder.Host.UseSerilog((context, configuration) =>
         .WriteTo.Console();
 });
 
-builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
-builder.Services.AddOpenTelemetry()
+
+builder.Services
+    .AddOpenTelemetry()
     .ConfigureResource(resource =>
         resource.AddService("Vitalia.API"))
     .WithTracing(tracing =>
@@ -80,10 +82,11 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "Vitalia",
+        Title = "Vitalia API - Módulo Comercial",
         Version = "v1",
         Description =
-            "API do módulo comercial da plataforma Vitalia para gerenciamento de categorias, produtos, carrinho, checkout e pedidos."
+            "API do módulo comercial da plataforma Vitalia para gerenciamento " +
+            "de categorias, produtos, carrinho, checkout e pedidos."
     });
 
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -102,8 +105,11 @@ builder.Services.AddSwaggerGen(options =>
         [new OpenApiSecuritySchemeReference("Bearer", document)] = []
     });
 
-    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    var xmlFile =
+        $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+
+    var xmlPath =
+        Path.Combine(AppContext.BaseDirectory, xmlFile);
 
     if (File.Exists(xmlPath))
     {
@@ -111,10 +117,11 @@ builder.Services.AddSwaggerGen(options =>
     }
 });
 
-var connectionString = builder.Configuration.GetConnectionString("OracleConnection")
-                       ?? throw new InvalidOperationException(
-                           "A connection string 'OracleConnection' não foi encontrada."
-                       );
+var connectionString =
+    builder.Configuration.GetConnectionString("OracleConnection")
+    ?? throw new InvalidOperationException(
+        "A connection string 'OracleConnection' não foi encontrada."
+    );
 
 builder.Services.AddDbContext<VitaliaDbContext>(options =>
     options.UseOracle(connectionString));
@@ -123,14 +130,14 @@ builder.Services
     .AddHealthChecks()
     .AddDbContextCheck<VitaliaDbContext>(
         name: "Oracle",
-        tags: new[] { "ready" });
+        tags: ["ready"]);
 
 builder.Services.AddVitaliaServices();
 
 var app = builder.Build();
 
 app.UseExceptionHandler();
-app.UseOpenTelemetryPrometheusScrapingEndpoint();
+
 app.UseSerilogRequestLogging(options =>
 {
     options.MessageTemplate =
@@ -158,22 +165,22 @@ app.UseSerilogRequestLogging(options =>
         };
 });
 
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+
+app.UseSwaggerUI(options =>
 {
-    app.UseSwagger();
+    options.SwaggerEndpoint(
+        "/swagger/v1/swagger.json",
+        "Vitalia API v1"
+    );
 
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint(
-            "/swagger/v1/swagger.json",
-            "Vitalia v1"
-        );
+    options.RoutePrefix = "swagger";
 
-        options.RoutePrefix = "swagger";
-    });
-}
+    options.DocumentTitle =
+        "Vitalia API - Módulo Comercial";
+});
 
-app.UseHttpsRedirection();
+app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
 app.UseCors(CorsPolicyName);
 
@@ -187,16 +194,21 @@ app.MapGet("/", () => Results.Ok(new
     application = "Vitalia API",
     status = "running",
     environment = app.Environment.EnvironmentName,
+
     links = new
     {
         swagger = "/swagger",
         health = "/health",
+        liveness = "/health/live",
+        readiness = "/health/ready",
+        metrics = "/metrics"
     }
 }));
 
 app.MapHealthChecks("/health", new HealthCheckOptions
 {
-    ResponseWriter = HealthCheckResponseWriter.WriteJsonResponse
+    ResponseWriter =
+        HealthCheckResponseWriter.WriteJsonResponse
 });
 
 app.MapHealthChecks("/health/ready", new HealthCheckOptions
@@ -214,6 +226,28 @@ app.MapHealthChecks("/health/live", new HealthCheckOptions
 
     ResponseWriter =
         HealthCheckResponseWriter.WriteJsonResponse
+});
+
+app.Lifetime.ApplicationStarted.Register(() =>
+{
+    foreach (var url in app.Urls)
+    {
+        Log.Information(
+            "Vitalia API iniciada em {Url}",
+            url);
+
+        Log.Information(
+            "Swagger disponível em {Url}/swagger",
+            url);
+
+        Log.Information(
+            "Health Check disponível em {Url}/health",
+            url);
+
+        Log.Information(
+            "Metrics disponível em {Url}/metrics",
+            url);
+    }
 });
 
 app.Run();
