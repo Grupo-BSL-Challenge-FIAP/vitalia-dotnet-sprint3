@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Vitalia.Application.DTOs.Order;
 using Vitalia.Application.Interfaces.Services;
@@ -10,6 +11,7 @@ namespace Vitalia.API.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Produces("application/json")]
+[Authorize]
 public class OrderController(
     IOrderService orderService,
     ILogger<OrderController> logger) : ControllerBase
@@ -21,10 +23,14 @@ public class OrderController(
     /// <returns>Os dados do pedido encontrado.</returns>
     [HttpGet("{id:long}")]
     [ProducesResponseType(typeof(OrderResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(long id)
     {
-        logger.LogInformation("Buscando pedido: {OrderId}", id);
+        logger.LogInformation(
+            "Buscando pedido: {OrderId}",
+            id);
 
         var order = await orderService.GetByIdAsync(id);
 
@@ -42,19 +48,22 @@ public class OrderController(
     }
 
     /// <summary>
-    /// Busca todos os pedidos de um usuário.
+    /// Busca todos os pedidos do usuário autenticado.
     /// </summary>
-    /// <param name="userId">Identificador do usuário.</param>
-    /// <returns>Lista de pedidos pertencentes ao usuário.</returns>
-    [HttpGet("user/{userId:long}")]
-    [ProducesResponseType(typeof(IEnumerable<OrderResponse>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetByUser(long userId)
+    /// <returns>Lista de pedidos pertencentes ao usuário autenticado.</returns>
+    [HttpGet("my-orders")]
+    [ProducesResponseType(
+        typeof(IEnumerable<OrderResponse>),
+        StatusCodes.Status200OK)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetCurrentUserOrders()
     {
         logger.LogInformation(
-            "Buscando pedidos do usuário: {UserId}",
-            userId);
+            "Buscando pedidos do usuário autenticado.");
 
-        var orders = await orderService.GetByUserIdAsync(userId);
+        var orders = await orderService.GetCurrentUserOrdersAsync();
 
         return Ok(orders);
     }
@@ -62,12 +71,26 @@ public class OrderController(
     /// <summary>
     /// Finaliza o carrinho e cria um novo pedido.
     /// </summary>
-    /// <param name="cartId">Identificador do carrinho que será finalizado.</param>
+    /// <param name="cartId">
+    /// Identificador do carrinho que será finalizado.
+    /// </param>
     /// <returns>O pedido criado a partir do carrinho.</returns>
     [HttpPost("checkout/{cartId:long}")]
-    [ProducesResponseType(typeof(OrderResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(
+        typeof(OrderResponse),
+        StatusCodes.Status200OK)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status404NotFound)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Checkout(long cartId)
     {
         logger.LogInformation(
@@ -78,7 +101,7 @@ public class OrderController(
 
         return Ok(order);
     }
-    
+
     /// <summary>
     /// Confirma um pedido que está aguardando confirmação.
     /// </summary>
@@ -86,10 +109,22 @@ public class OrderController(
     /// <returns>Retorna 204 quando o pedido é confirmado.</returns>
     [HttpPut("{id:long}/confirm")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status404NotFound)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Confirm(long id)
     {
         await orderService.ConfirmAsync(id);
+
         return NoContent();
     }
 
@@ -100,10 +135,22 @@ public class OrderController(
     /// <returns>Retorna 204 quando o pedido é colocado em processamento.</returns>
     [HttpPut("{id:long}/process")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status404NotFound)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Process(long id)
     {
         await orderService.ProcessAsync(id);
+
         return NoContent();
     }
 
@@ -114,10 +161,22 @@ public class OrderController(
     /// <returns>Retorna 204 quando o pedido é enviado.</returns>
     [HttpPut("{id:long}/ship")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status404NotFound)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Ship(long id)
     {
         await orderService.ShipAsync(id);
+
         return NoContent();
     }
 
@@ -128,10 +187,22 @@ public class OrderController(
     /// <returns>Retorna 204 quando o pedido é marcado como entregue.</returns>
     [HttpPut("{id:long}/deliver")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status404NotFound)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Deliver(long id)
     {
         await orderService.DeliverAsync(id);
+
         return NoContent();
     }
 
@@ -142,10 +213,22 @@ public class OrderController(
     /// <returns>Retorna 204 quando o pedido é cancelado.</returns>
     [HttpPut("{id:long}/cancel")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status404NotFound)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Cancel(long id)
     {
         await orderService.CancelAsync(id);
+
         return NoContent();
     }
 }
