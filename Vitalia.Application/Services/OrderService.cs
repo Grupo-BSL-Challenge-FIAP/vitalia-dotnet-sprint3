@@ -147,9 +147,13 @@ public class OrderService : IOrderService
         }
     }
 
+    /// <summary>
+    /// Confirma um pedido.
+    /// O acesso ao método é protegido no Controller para ADMIN.
+    /// </summary>
     public async Task ConfirmAsync(long orderId)
     {
-        var order = await GetOwnedOrderAsync(orderId);
+        var order = await GetOrderForManagementAsync(orderId);
 
         order.Confirm();
 
@@ -158,9 +162,13 @@ public class OrderService : IOrderService
         await _unitOfWork.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Coloca um pedido confirmado em processamento.
+    /// O acesso ao método é protegido no Controller para ADMIN.
+    /// </summary>
     public async Task ProcessAsync(long orderId)
     {
-        var order = await GetOwnedOrderAsync(orderId);
+        var order = await GetOrderForManagementAsync(orderId);
 
         order.Process();
 
@@ -169,9 +177,13 @@ public class OrderService : IOrderService
         await _unitOfWork.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Marca um pedido em processamento como enviado.
+    /// O acesso ao método é protegido no Controller para ADMIN.
+    /// </summary>
     public async Task ShipAsync(long orderId)
     {
-        var order = await GetOwnedOrderAsync(orderId);
+        var order = await GetOrderForManagementAsync(orderId);
 
         order.Ship();
 
@@ -180,9 +192,13 @@ public class OrderService : IOrderService
         await _unitOfWork.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Marca um pedido enviado como entregue.
+    /// O acesso ao método é protegido no Controller para ADMIN.
+    /// </summary>
     public async Task DeliverAsync(long orderId)
     {
-        var order = await GetOwnedOrderAsync(orderId);
+        var order = await GetOrderForManagementAsync(orderId);
 
         order.Deliver();
 
@@ -191,6 +207,9 @@ public class OrderService : IOrderService
         await _unitOfWork.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Cancela um pedido pertencente ao usuário autenticado.
+    /// </summary>
     public async Task CancelAsync(long orderId)
     {
         var order = await GetOwnedOrderAsync(orderId);
@@ -202,6 +221,9 @@ public class OrderService : IOrderService
         await _unitOfWork.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Busca um pedido garantindo que ele pertença ao usuário autenticado.
+    /// </summary>
     private async Task<Order> GetOwnedOrderAsync(long orderId)
     {
         var order = await _orderRepository.GetByIdAsync(orderId);
@@ -217,6 +239,10 @@ public class OrderService : IOrderService
         return order;
     }
 
+    /// <summary>
+    /// Busca um pedido do usuário autenticado sem lançar exceção
+    /// quando o pedido não existe.
+    /// </summary>
     private async Task<Order?> GetOwnedOrderOrNullAsync(long orderId)
     {
         var order = await _orderRepository.GetByIdAsync(orderId);
@@ -231,6 +257,32 @@ public class OrderService : IOrderService
         return order;
     }
 
+    /// <summary>
+    /// Busca um pedido para gerenciamento administrativo.
+    /// Administradores podem gerenciar pedidos de qualquer usuário.
+    /// Outros usuários só poderiam acessar pedidos próprios.
+    /// </summary>
+    private async Task<Order> GetOrderForManagementAsync(long orderId)
+    {
+        var order = await _orderRepository.GetByIdAsync(orderId);
+
+        if (order is null)
+        {
+            throw new KeyNotFoundException(
+                $"Pedido com ID {orderId} não encontrado.");
+        }
+
+        if (!_currentUser.IsInRole("ADMIN"))
+        {
+            ValidateOrderOwnership(order);
+        }
+
+        return order;
+    }
+
+    /// <summary>
+    /// Garante que o pedido pertença ao usuário autenticado.
+    /// </summary>
     private void ValidateOrderOwnership(Order order)
     {
         if (order.UserId != _currentUser.UserId)
@@ -240,6 +292,9 @@ public class OrderService : IOrderService
         }
     }
 
+    /// <summary>
+    /// Converte a entidade Order para o DTO de resposta.
+    /// </summary>
     private static OrderResponse MapToResponse(Order order)
     {
         var items = order.Items
