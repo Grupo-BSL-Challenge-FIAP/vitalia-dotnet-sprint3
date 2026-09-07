@@ -253,6 +253,8 @@ entre a API Java e a API .NET.
 As senhas dos usuários de avaliação são fornecidas separadamente no
 arquivo de credenciais da entrega.
 
+> As contas acima foram criadas exclusivamente para demonstração e avaliação acadêmica.
+
 #### Fluxo de teste
 
 1. Acesse o Swagger da API Java:
@@ -331,9 +333,9 @@ Swagger UI:
 
 http://localhost:8080/swagger-ui/index.html
 
-API:
+#### Backend Java do Vitalia:
 
-http://localhost:8080
+https://github.com/Grupo-BSL-Challenge-FIAP/vitalia-JavaAdvanced-Sprint3
 
 O fluxo para testar a integração é:
 
