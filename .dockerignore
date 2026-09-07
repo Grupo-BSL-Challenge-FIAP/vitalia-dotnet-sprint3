@@ -1,0 +1,11 @@
+**/bin
+**/obj
+**/.idea
+**/.vs
+**/.git
+**/.gitignore
+**/TestResults
+**/*.user
+**/*.suo
+**/.DS_Store
+README.md
