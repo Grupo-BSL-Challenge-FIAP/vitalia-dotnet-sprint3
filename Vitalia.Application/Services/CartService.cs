@@ -12,21 +12,26 @@ public class CartService : ICartService
     private readonly ICartItemRepository _cartItemRepository;
     private readonly IProductRepository _productRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ICurrentUser _currentUser;
 
     public CartService(
         ICartRepository cartRepository,
         ICartItemRepository cartItemRepository,
         IProductRepository productRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        ICurrentUser currentUser)
     {
         _cartRepository = cartRepository;
         _cartItemRepository = cartItemRepository;
         _productRepository = productRepository;
         _unitOfWork = unitOfWork;
+        _currentUser = currentUser;
     }
 
-    public async Task<CartResponse> GetOrCreateActiveCartAsync(long userId)
+    public async Task<CartResponse> GetOrCreateActiveCartAsync()
     {
+        var userId = _currentUser.UserId;
+
         var cart = await _cartRepository
             .GetActiveByUserIdAsync(userId);
 
@@ -45,23 +50,21 @@ public class CartService : ICartService
     {
         var cart = await _cartRepository.GetByIdAsync(id);
 
-        return cart is null
-            ? null
-            : MapToResponse(cart);
+        if (cart is null)
+        {
+            return null;
+        }
+
+        ValidateCartOwnership(cart);
+
+        return MapToResponse(cart);
     }
 
     public async Task<CartResponse> AddItemAsync(
         long cartId,
         CartItemRequest request)
     {
-        var cart = await _cartRepository.GetByIdAsync(cartId);
-
-        if (cart is null)
-        {
-            throw new KeyNotFoundException(
-                $"Carrinho com ID {cartId} não encontrado."
-            );
-        }
+        var cart = await GetOwnedCartAsync(cartId);
 
         if (cart.Status != CartStatus.ACTIVE)
         {
@@ -137,9 +140,9 @@ public class CartService : ICartService
 
         await _unitOfWork.SaveChangesAsync();
 
-        var updatedCart = await _cartRepository.GetByIdAsync(cartId);
+        var updatedCart = await GetOwnedCartAsync(cartId);
 
-        return MapToResponse(updatedCart!);
+        return MapToResponse(updatedCart);
     }
 
     public async Task<CartResponse> UpdateItemAsync(
@@ -154,14 +157,7 @@ public class CartService : ICartService
             );
         }
 
-        var cart = await _cartRepository.GetByIdAsync(cartId);
-
-        if (cart is null)
-        {
-            throw new KeyNotFoundException(
-                $"Carrinho com ID {cartId} não encontrado."
-            );
-        }
+        var cart = await GetOwnedCartAsync(cartId);
 
         if (cart.Status != CartStatus.ACTIVE)
         {
@@ -214,23 +210,16 @@ public class CartService : ICartService
 
         await _unitOfWork.SaveChangesAsync();
 
-        var updatedCart = await _cartRepository.GetByIdAsync(cartId);
+        var updatedCart = await GetOwnedCartAsync(cartId);
 
-        return MapToResponse(updatedCart!);
+        return MapToResponse(updatedCart);
     }
 
     public async Task RemoveItemAsync(
         long cartId,
         long productId)
     {
-        var cart = await _cartRepository.GetByIdAsync(cartId);
-
-        if (cart is null)
-        {
-            throw new KeyNotFoundException(
-                $"Carrinho com ID {cartId} não encontrado."
-            );
-        }
+        var cart = await GetOwnedCartAsync(cartId);
 
         if (cart.Status != CartStatus.ACTIVE)
         {
@@ -260,12 +249,12 @@ public class CartService : ICartService
 
     public async Task CheckoutAsync(long cartId)
     {
-        var cart = await _cartRepository.GetByIdAsync(cartId);
+        var cart = await GetOwnedCartAsync(cartId);
 
-        if (cart is null)
+        if (cart.Status != CartStatus.ACTIVE)
         {
-            throw new KeyNotFoundException(
-                $"Carrinho com ID {cartId} não encontrado."
+            throw new InvalidOperationException(
+                "Somente um carrinho ativo pode ser finalizado."
             );
         }
 
@@ -281,6 +270,32 @@ public class CartService : ICartService
         _cartRepository.Update(cart);
 
         await _unitOfWork.SaveChangesAsync();
+    }
+
+    private async Task<Cart> GetOwnedCartAsync(long cartId)
+    {
+        var cart = await _cartRepository.GetByIdAsync(cartId);
+
+        if (cart is null)
+        {
+            throw new KeyNotFoundException(
+                $"Carrinho com ID {cartId} não encontrado."
+            );
+        }
+
+        ValidateCartOwnership(cart);
+
+        return cart;
+    }
+
+    private void ValidateCartOwnership(Cart cart)
+    {
+        if (cart.UserId != _currentUser.UserId)
+        {
+            throw new UnauthorizedAccessException(
+                "Você não tem permissão para acessar este carrinho."
+            );
+        }
     }
 
     private static CartResponse MapToResponse(Cart cart)
