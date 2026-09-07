@@ -35,6 +35,17 @@ public sealed class VitaliaWebApplicationFactory
             "User Id=test;Password=test;Data Source=localhost:1521/TEST;");
     }
 
+    public async Task ResetDatabaseAsync()
+    {
+        using var scope = Services.CreateScope();
+
+        var dbContext = scope.ServiceProvider
+            .GetRequiredService<VitaliaDbContext>();
+
+        await dbContext.Database.EnsureDeletedAsync();
+        await dbContext.Database.EnsureCreatedAsync();
+    }
+
     protected override void ConfigureWebHost(
         IWebHostBuilder builder)
     {
