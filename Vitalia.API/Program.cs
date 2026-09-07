@@ -8,12 +8,14 @@ using Vitalia.Application.Services;
 using Vitalia.Infrastructure.Repositories;
 using Vitalia.API.Middleware;
 using Vitalia.API.Configurations;
+using Vitalia.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddHttpContextAccessor();
 
 JwtConfiguration.Configure(
     builder.Services,
@@ -76,6 +78,8 @@ builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
 
 builder.Services.AddScoped<IOrderService, OrderService>();
+
+builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
