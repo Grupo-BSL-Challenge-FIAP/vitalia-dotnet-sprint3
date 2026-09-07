@@ -5,3 +5,8 @@ riderModule.iml
 /_ReSharper.Caches/
 migration.sql
 TestResults/
+.idea/
+*.DotSettings.user
+*.user
+*.suo
+.DS_Store
