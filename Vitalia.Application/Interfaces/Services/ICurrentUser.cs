@@ -1,6 +1,6 @@
 namespace Vitalia.Application.Interfaces.Services;
 
-public class ICurrentUser
+public interface ICurrentUser
 {
-    
+    long UserId { get; }
 }
