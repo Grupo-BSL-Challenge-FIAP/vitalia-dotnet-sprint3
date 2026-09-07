@@ -12,6 +12,7 @@ namespace Vitalia.API.Controllers;
 [ApiController]
 [Produces("application/json")]
 [Authorize]
+[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 public class CategoryController(
     ICategoryService categoryService,
     ILogger<CategoryController> logger) : ControllerBase
