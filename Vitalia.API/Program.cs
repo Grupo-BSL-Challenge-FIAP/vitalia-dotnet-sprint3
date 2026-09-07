@@ -111,6 +111,7 @@ builder.Services.AddVitaliaServices();
 var app = builder.Build();
 
 app.UseExceptionHandler();
+app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
 if (app.Environment.IsDevelopment())
 {
