@@ -14,33 +14,49 @@ public sealed class GlobalExceptionHandler(
         CancellationToken cancellationToken)
     {
         var traceId =
-            System.Diagnostics.Activity.Current?.Id
+            System.Diagnostics.Activity.Current?
+                .TraceId
+                .ToString()
             ?? httpContext.TraceIdentifier;
 
-        logger.LogError(
+        var (statusCode, title, detail) =
+            MapException(
+                exception,
+                environment);
+
+        LogException(
             exception,
-            "Exceção não tratada: {Message} | TraceId: {TraceId}",
-            exception.Message,
+            statusCode,
             traceId);
 
-        var (statusCode, title, detail) =
-            MapException(exception, environment);
+        httpContext.Response.StatusCode =
+            statusCode;
 
-        httpContext.Response.StatusCode = statusCode;
-        httpContext.Response.ContentType = "application/problem+json";
+        httpContext.Response.ContentType =
+            "application/problem+json";
 
         var problem = new ProblemDetails
         {
-            Type = $"https://httpstatuses.com/{statusCode}",
-            Title = title,
-            Status = statusCode,
-            Detail = detail,
-            Instance = httpContext.Request.Path
+            Type =
+                $"https://httpstatuses.com/{statusCode}",
+
+            Title =
+                title,
+
+            Status =
+                statusCode,
+
+            Detail =
+                detail,
+
+            Instance =
+                httpContext.Request.Path
         };
 
         if (environment.IsDevelopment())
         {
-            problem.Extensions["traceId"] = traceId;
+            problem.Extensions["traceId"] =
+                traceId;
         }
 
         await httpContext.Response.WriteAsJsonAsync(
@@ -50,7 +66,46 @@ public sealed class GlobalExceptionHandler(
         return true;
     }
 
-    private static (int StatusCode, string Title, string Detail)
+    private void LogException(
+        Exception exception,
+        int statusCode,
+        string traceId)
+    {
+        if (statusCode >=
+            StatusCodes.Status500InternalServerError)
+        {
+            logger.LogError(
+                exception,
+                "Erro inesperado durante processamento da requisição. " +
+                "StatusCode: {StatusCode} | " +
+                "ExceptionType: {ExceptionType} | " +
+                "Message: {Message} | " +
+                "TraceId: {TraceId}",
+                statusCode,
+                exception.GetType().Name,
+                exception.Message,
+                traceId);
+
+            return;
+        }
+
+        logger.LogWarning(
+            exception,
+            "Falha esperada durante processamento da requisição. " +
+            "StatusCode: {StatusCode} | " +
+            "ExceptionType: {ExceptionType} | " +
+            "Message: {Message} | " +
+            "TraceId: {TraceId}",
+            statusCode,
+            exception.GetType().Name,
+            exception.Message,
+            traceId);
+    }
+
+    private static (
+        int StatusCode,
+        string Title,
+        string Detail)
         MapException(
             Exception exception,
             IHostEnvironment environment)
@@ -85,14 +140,18 @@ public sealed class GlobalExceptionHandler(
                     e.Message
                 ),
 
-            DbUpdateException e when IsForeignKeyViolation(e) =>
+            DbUpdateException e
+                when IsForeignKeyViolation(e) =>
                 (
                     StatusCodes.Status409Conflict,
                     "Conflito de regra de negócio.",
                     "Não é possível excluir a categoria porque existem produtos associados a ela."
                 ),
 
-            _ => MapUnhandled(environment, exception)
+            _ =>
+                MapUnhandled(
+                    environment,
+                    exception)
         };
     }
 
@@ -125,6 +184,9 @@ public sealed class GlobalExceptionHandler(
     {
         return exception.InnerException?
             .Message
-            .Contains("ORA-02292") == true;
+            .Contains(
+                "ORA-02292",
+                StringComparison.OrdinalIgnoreCase)
+            == true;
     }
 }
