@@ -4,7 +4,7 @@ namespace Vitalia.Application.Interfaces.Services;
 
 public interface ICartService
 {
-    Task<CartResponse> GetOrCreateActiveCartAsync(long userId);
+    Task<CartResponse> GetOrCreateActiveCartAsync();
 
     Task<CartResponse?> GetByIdAsync(long id);
 
