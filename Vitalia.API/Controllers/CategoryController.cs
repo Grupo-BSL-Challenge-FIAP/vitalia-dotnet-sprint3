@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Vitalia.Application.DTOs.Category;
 using Vitalia.Application.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Vitalia.API.Controllers;
 
@@ -10,6 +11,7 @@ namespace Vitalia.API.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Produces("application/json")]
+[Authorize]
 public class CategoryController(
     ICategoryService categoryService,
     ILogger<CategoryController> logger) : ControllerBase
@@ -86,6 +88,7 @@ public class CategoryController(
     [ProducesResponseType(
         typeof(ProblemDetails),
         StatusCodes.Status500InternalServerError)]
+    [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> Create(
         [FromBody] CategoryRequest request)
     {
@@ -124,6 +127,7 @@ public class CategoryController(
     [ProducesResponseType(
         typeof(ProblemDetails),
         StatusCodes.Status500InternalServerError)]
+    [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> Update(
         long id,
         [FromBody] CategoryRequest request)
@@ -150,6 +154,7 @@ public class CategoryController(
     [ProducesResponseType(
         typeof(ProblemDetails),
         StatusCodes.Status500InternalServerError)]
+    [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> Delete(long id)
     {
         logger.LogInformation(
