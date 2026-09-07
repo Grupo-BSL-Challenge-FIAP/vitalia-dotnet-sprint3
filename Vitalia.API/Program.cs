@@ -9,8 +9,18 @@ using Vitalia.API.Health;
 using Vitalia.API.Extensions;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, configuration) =>
+{
+    configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .Enrich.FromLogContext()
+        .Enrich.WithProperty("Application", "Vitalia.API")
+        .WriteTo.Console();
+});
 
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
@@ -112,6 +122,7 @@ var app = builder.Build();
 
 app.UseExceptionHandler();
 app.UseOpenTelemetryPrometheusScrapingEndpoint();
+app.UseSerilogRequestLogging();
 
 if (app.Environment.IsDevelopment())
 {
