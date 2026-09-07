@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Vitalia.Infrastructure.Data;
-using Vitalia.API.Middleware;
+using Vitalia.API.Exceptions;
 using Vitalia.API.Configurations;
 using Vitalia.API.Health;
 using Vitalia.API.Extensions;
@@ -14,6 +14,8 @@ builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 const string CorsPolicyName = "VitaliaFrontend";
 
@@ -88,7 +90,8 @@ builder.Services
 builder.Services.AddVitaliaServices();
 
 var app = builder.Build();
-app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {
