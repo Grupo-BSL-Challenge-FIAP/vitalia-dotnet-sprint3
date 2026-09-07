@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Vitalia.Application.Interfaces.Services;
 
 namespace Vitalia.API.Services;
@@ -5,13 +6,17 @@ namespace Vitalia.API.Services;
 public class CurrentUser(IHttpContextAccessor httpContextAccessor)
     : ICurrentUser
 {
+    private ClaimsPrincipal User =>
+        httpContextAccessor.HttpContext?.User
+        ?? throw new UnauthorizedAccessException(
+            "Não foi possível identificar o usuário autenticado."
+        );
+
     public long UserId
     {
         get
         {
-            var userIdClaim = httpContextAccessor
-                .HttpContext?
-                .User
+            var userIdClaim = User
                 .FindFirst("userId")?
                 .Value;
 
@@ -31,5 +36,21 @@ public class CurrentUser(IHttpContextAccessor httpContextAccessor)
 
             return userId;
         }
+    }
+
+    public bool IsInRole(string role)
+    {
+        if (string.IsNullOrWhiteSpace(role))
+        {
+            return false;
+        }
+
+        return User
+            .FindAll("roles")
+            .Any(claim =>
+                string.Equals(
+                    claim.Value,
+                    role,
+                    StringComparison.OrdinalIgnoreCase));
     }
 }
