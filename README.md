@@ -684,7 +684,7 @@ Configure a conexão Oracle:
 
 ```bash
 dotnet user-secrets set \
-  "ConnectionStrings:Oracle" \
+  "ConnectionStrings:OracleConnection" \
   "User Id=USUARIO;Password=SENHA;Data Source=oracle.fiap.com.br:1521/ORCL;" \
   --project Vitalia.API/Vitalia.API.csproj
 ```
@@ -821,7 +821,7 @@ Para executar o container:
 docker run --rm \
   -p 8080:8080 \
   -e ASPNETCORE_ENVIRONMENT=Development \
-  -e ConnectionStrings__Oracle="<SUA_CONNECTION_STRING>" \
+  -e ConnectionStrings__OracleConnection="<SUA_CONNECTION_STRING>" \
   -e JWT_SECRET="<SEU_SEGREDO_JWT>" \
   vitalia-api
 ```
