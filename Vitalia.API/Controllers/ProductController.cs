@@ -156,6 +156,7 @@ public class ProductController(
     [ProducesResponseType(typeof(ProductResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> Create([FromBody] ProductRequest request)
     {
         logger.LogInformation(
@@ -191,6 +192,7 @@ public class ProductController(
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> Update(
         long id,
         [FromBody] ProductRequest request)
@@ -216,6 +218,7 @@ public class ProductController(
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> Delete(long id)
     {
         logger.LogInformation(
