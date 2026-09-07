@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Vitalia.Application.DTOs.Cart;
 using Vitalia.Application.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Vitalia.API.Controllers;
 
@@ -10,6 +11,7 @@ namespace Vitalia.API.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Produces("application/json")]
+[Authorize]
 public class CartController(
     ICartService cartService,
     ILogger<CartController> logger) : ControllerBase
@@ -18,18 +20,18 @@ public class CartController(
     /// Busca o carrinho ativo de um usuário.
     /// Caso não exista, um novo carrinho é criado.
     /// </summary>
-    [HttpGet("user/{userId:long}")]
+    [HttpGet]
     [ProducesResponseType(typeof(CartResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetByUser(long userId)
+    public async Task<IActionResult> GetCurrentUserCart()
     {
         logger.LogInformation(
-            "Buscando carrinho ativo do usuário: {UserId}",
-            userId
+            "Buscando carrinho do usuário autenticado."
         );
 
         var cart = await cartService
-            .GetOrCreateActiveCartAsync(userId);
+            .GetOrCreateActiveCartAsync();
 
         return Ok(cart);
     }
