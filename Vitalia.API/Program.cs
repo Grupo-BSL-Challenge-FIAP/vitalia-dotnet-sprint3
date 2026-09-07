@@ -7,12 +7,17 @@ using Vitalia.Application.Interfaces.Services;
 using Vitalia.Application.Services;
 using Vitalia.Infrastructure.Repositories;
 using Vitalia.API.Middleware;
+using Vitalia.API.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+
+JwtConfiguration.Configure(
+    builder.Services,
+    builder.Configuration);
 
 builder.Services.AddSwaggerGen(options =>
 {
@@ -77,6 +82,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 
