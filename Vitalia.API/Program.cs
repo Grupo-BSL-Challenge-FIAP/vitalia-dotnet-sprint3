@@ -9,6 +9,7 @@ using Vitalia.API.Health;
 using Vitalia.API.Extensions;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,6 +32,14 @@ builder.Services.AddProblemDetails();
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource =>
         resource.AddService("Vitalia.API"))
+    .WithTracing(tracing =>
+    {
+        tracing
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddEntityFrameworkCoreInstrumentation()
+            .AddConsoleExporter();
+    })
     .WithMetrics(metrics =>
     {
         metrics
@@ -113,8 +122,8 @@ builder.Services.AddDbContext<VitaliaDbContext>(options =>
 builder.Services
     .AddHealthChecks()
     .AddDbContextCheck<VitaliaDbContext>(
-        name: "Oracle"
-    );
+        name: "Oracle",
+        tags: new[] { "ready" });
 
 builder.Services.AddVitaliaServices();
 
@@ -163,6 +172,23 @@ app.MapGet("/", () => Results.Ok(new
 app.MapHealthChecks("/health", new HealthCheckOptions
 {
     ResponseWriter = HealthCheckResponseWriter.WriteJsonResponse
+});
+
+app.MapHealthChecks("/health/ready", new HealthCheckOptions
+{
+    Predicate = healthCheck =>
+        healthCheck.Tags.Contains("ready"),
+
+    ResponseWriter =
+        HealthCheckResponseWriter.WriteJsonResponse
+});
+
+app.MapHealthChecks("/health/live", new HealthCheckOptions
+{
+    Predicate = _ => false,
+
+    ResponseWriter =
+        HealthCheckResponseWriter.WriteJsonResponse
 });
 
 app.Run();
