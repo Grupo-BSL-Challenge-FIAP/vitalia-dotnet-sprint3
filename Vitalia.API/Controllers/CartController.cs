@@ -139,23 +139,4 @@ public class CartController(
 
         return NoContent();
     }
-
-    /// <summary>
-    /// Finaliza o carrinho.
-    /// </summary>
-    [HttpPost("{cartId:long}/checkout")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Checkout(long cartId)
-    {
-        logger.LogInformation(
-            "Finalizando carrinho: {CartId}",
-            cartId
-        );
-
-        await cartService.CheckoutAsync(cartId);
-
-        return NoContent();
-    }
 }

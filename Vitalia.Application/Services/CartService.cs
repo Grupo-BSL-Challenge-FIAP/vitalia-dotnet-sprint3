@@ -247,31 +247,6 @@ public class CartService : ICartService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task CheckoutAsync(long cartId)
-    {
-        var cart = await GetOwnedCartAsync(cartId);
-
-        if (cart.Status != CartStatus.ACTIVE)
-        {
-            throw new InvalidOperationException(
-                "Somente um carrinho ativo pode ser finalizado."
-            );
-        }
-
-        if (!cart.Items.Any())
-        {
-            throw new InvalidOperationException(
-                "Não é possível finalizar um carrinho vazio."
-            );
-        }
-
-        cart.Checkout();
-
-        _cartRepository.Update(cart);
-
-        await _unitOfWork.SaveChangesAsync();
-    }
-
     private async Task<Cart> GetOwnedCartAsync(long cartId)
     {
         var cart = await _cartRepository.GetByIdAsync(cartId);

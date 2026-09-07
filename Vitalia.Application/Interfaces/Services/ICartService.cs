@@ -20,6 +20,4 @@ public interface ICartService
     Task RemoveItemAsync(
         long cartId,
         long productId);
-
-    Task CheckoutAsync(long cartId);
 }
