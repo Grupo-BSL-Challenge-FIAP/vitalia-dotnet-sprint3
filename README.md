@@ -246,7 +246,7 @@ entre a API Java e a API .NET.
 | Perfil | E-mail |
 |---|---|
 | TUTOR | `avaliacao@tutor.com.br` |
-| ADMIN | `moises.barsoti@adminvitalia.com.br` |
+| ADMIN | `avaliacao@vitaliaadmin.com.br` |
 
 As senhas dos usuários de avaliação são fornecidas separadamente no
 arquivo de credenciais da entrega.
