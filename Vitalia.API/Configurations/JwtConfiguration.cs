@@ -33,7 +33,9 @@ public static class JwtConfiguration
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(
                         Encoding.UTF8.GetBytes(jwtSecret)
-                    )
+                    ),
+
+                    RoleClaimType = "roles"
                 };
             });
 
