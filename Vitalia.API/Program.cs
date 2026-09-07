@@ -1,14 +1,12 @@
 using System.Reflection;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Vitalia.Infrastructure.Data;
-using Vitalia.Application.Interfaces.Repositories;
-using Vitalia.Application.Interfaces.Services;
-using Vitalia.Application.Services;
-using Vitalia.Infrastructure.Repositories;
 using Vitalia.API.Middleware;
 using Vitalia.API.Configurations;
-using Vitalia.API.Services;
+using Vitalia.API.Health;
+using Vitalia.API.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +14,23 @@ builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
+
+const string CorsPolicyName = "VitaliaFrontend";
+
+var allowedOrigins = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .Get<string[]>() ?? [];
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(CorsPolicyName, policy =>
+    {
+        policy
+            .WithOrigins(allowedOrigins)
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 
 JwtConfiguration.Configure(
     builder.Services,
@@ -64,24 +79,13 @@ var connectionString = builder.Configuration.GetConnectionString("OracleConnecti
 builder.Services.AddDbContext<VitaliaDbContext>(options =>
     options.UseOracle(connectionString));
 
-builder.Services.AddScoped<IProductRepository, ProductRepository>();
-builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services
+    .AddHealthChecks()
+    .AddDbContextCheck<VitaliaDbContext>(
+        name: "Oracle"
+    );
 
-builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
-builder.Services.AddScoped<ICategoryService, CategoryService>();
-
-builder.Services.AddScoped<ICartRepository, CartRepository>();
-builder.Services.AddScoped<ICartItemRepository, CartItemRepository>();
-builder.Services.AddScoped<ICartService, CartService>();
-
-builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
-
-builder.Services.AddScoped<IOrderService, OrderService>();
-
-builder.Services.AddScoped<ICurrentUser, CurrentUser>();
-
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddVitaliaServices();
 
 var app = builder.Build();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
@@ -103,9 +107,28 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors(CorsPolicyName);
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapGet("/", () => Results.Ok(new
+{
+    application = "Vitalia API",
+    status = "running",
+    environment = app.Environment.EnvironmentName,
+    links = new
+    {
+        swagger = "/swagger",
+        health = "/health",
+    }
+}));
+
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    ResponseWriter = HealthCheckResponseWriter.WriteJsonResponse
+});
 
 app.Run();
