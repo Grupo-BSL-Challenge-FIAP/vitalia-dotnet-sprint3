@@ -83,7 +83,7 @@ builder.Services.AddSwaggerGen(options =>
         Title = "Vitalia",
         Version = "v1",
         Description =
-            "API da plataforma Vitalia para gerenciamento de produtos, pets,"
+            "API do módulo comercial da plataforma Vitalia para gerenciamento de categorias, produtos, carrinho, checkout e pedidos."
     });
 
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
