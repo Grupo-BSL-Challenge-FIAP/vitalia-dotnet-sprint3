@@ -104,9 +104,11 @@ public class OrderController(
 
     /// <summary>
     /// Confirma um pedido que está aguardando confirmação.
+    /// Apenas administradores podem confirmar pedidos.
     /// </summary>
     /// <param name="id">Identificador do pedido.</param>
     /// <returns>Retorna 204 quando o pedido é confirmado.</returns>
+    [Authorize(Roles = "ADMIN")]
     [HttpPut("{id:long}/confirm")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(
@@ -123,6 +125,10 @@ public class OrderController(
         StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Confirm(long id)
     {
+        logger.LogInformation(
+            "Confirmando pedido: {OrderId}",
+            id);
+
         await orderService.ConfirmAsync(id);
 
         return NoContent();
@@ -130,9 +136,11 @@ public class OrderController(
 
     /// <summary>
     /// Inicia o processamento de um pedido confirmado.
+    /// Apenas administradores podem processar pedidos.
     /// </summary>
     /// <param name="id">Identificador do pedido.</param>
     /// <returns>Retorna 204 quando o pedido é colocado em processamento.</returns>
+    [Authorize(Roles = "ADMIN")]
     [HttpPut("{id:long}/process")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(
@@ -149,6 +157,10 @@ public class OrderController(
         StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Process(long id)
     {
+        logger.LogInformation(
+            "Processando pedido: {OrderId}",
+            id);
+
         await orderService.ProcessAsync(id);
 
         return NoContent();
@@ -156,9 +168,11 @@ public class OrderController(
 
     /// <summary>
     /// Marca um pedido em processamento como enviado.
+    /// Apenas administradores podem enviar pedidos.
     /// </summary>
     /// <param name="id">Identificador do pedido.</param>
     /// <returns>Retorna 204 quando o pedido é enviado.</returns>
+    [Authorize(Roles = "ADMIN")]
     [HttpPut("{id:long}/ship")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(
@@ -175,6 +189,10 @@ public class OrderController(
         StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Ship(long id)
     {
+        logger.LogInformation(
+            "Enviando pedido: {OrderId}",
+            id);
+
         await orderService.ShipAsync(id);
 
         return NoContent();
@@ -182,9 +200,11 @@ public class OrderController(
 
     /// <summary>
     /// Marca um pedido enviado como entregue.
+    /// Apenas administradores podem entregar pedidos.
     /// </summary>
     /// <param name="id">Identificador do pedido.</param>
     /// <returns>Retorna 204 quando o pedido é marcado como entregue.</returns>
+    [Authorize(Roles = "ADMIN")]
     [HttpPut("{id:long}/deliver")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(
@@ -201,13 +221,17 @@ public class OrderController(
         StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Deliver(long id)
     {
+        logger.LogInformation(
+            "Entregando pedido: {OrderId}",
+            id);
+
         await orderService.DeliverAsync(id);
 
         return NoContent();
     }
 
     /// <summary>
-    /// Cancela um pedido.
+    /// Cancela um pedido pertencente ao usuário autenticado.
     /// </summary>
     /// <param name="id">Identificador do pedido.</param>
     /// <returns>Retorna 204 quando o pedido é cancelado.</returns>
@@ -227,6 +251,10 @@ public class OrderController(
         StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Cancel(long id)
     {
+        logger.LogInformation(
+            "Cancelando pedido: {OrderId}",
+            id);
+
         await orderService.CancelAsync(id);
 
         return NoContent();
