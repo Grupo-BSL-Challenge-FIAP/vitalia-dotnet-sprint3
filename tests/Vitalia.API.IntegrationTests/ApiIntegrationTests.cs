@@ -10,14 +10,17 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Vitalia.API.IntegrationTests;
 
-public class ApiIntegrationTests : IDisposable
+public class ApiIntegrationTests
+    : IClassFixture<VitaliaWebApplicationFactory>,
+      IAsyncLifetime
 {
     private readonly VitaliaWebApplicationFactory _factory;
     private readonly HttpClient _client;
 
-    public ApiIntegrationTests()
+    public ApiIntegrationTests(
+        VitaliaWebApplicationFactory factory)
     {
-        _factory = new VitaliaWebApplicationFactory();
+        _factory = factory;
 
         _client = _factory.CreateClient(
             new WebApplicationFactoryClientOptions
@@ -26,12 +29,20 @@ public class ApiIntegrationTests : IDisposable
             });
     }
 
+    public async Task InitializeAsync()
+    {
+        await _factory.ResetDatabaseAsync();
+    }
+
     [Fact]
     public async Task Swagger_EmDevelopment_DeveRetornar200()
     {
+        // Act
         var response =
-            await _client.GetAsync("/swagger/v1/swagger.json");
+            await _client.GetAsync(
+                "/swagger/v1/swagger.json");
 
+        // Assert
         Assert.Equal(
             HttpStatusCode.OK,
             response.StatusCode);
@@ -40,32 +51,37 @@ public class ApiIntegrationTests : IDisposable
     [Fact]
     public async Task Health_DeveRetornarHealthy()
     {
+        // Act
         var response =
             await _client.GetAsync("/health");
 
+        var body =
+            await response.Content.ReadAsStringAsync();
+
+        // Assert
         Assert.Equal(
             HttpStatusCode.OK,
             response.StatusCode);
-
-        var body =
-            await response.Content.ReadAsStringAsync();
 
         Assert.Contains(
             "Healthy",
             body);
     }
+
     [Fact]
     public async Task HealthLive_DeveRetornarHealthy()
     {
+        // Act
         var response =
             await _client.GetAsync("/health/live");
 
+        var body =
+            await response.Content.ReadAsStringAsync();
+
+        // Assert
         Assert.Equal(
             HttpStatusCode.OK,
             response.StatusCode);
-
-        var body =
-            await response.Content.ReadAsStringAsync();
 
         Assert.Contains(
             "Healthy",
@@ -75,15 +91,17 @@ public class ApiIntegrationTests : IDisposable
     [Fact]
     public async Task HealthReady_DeveRetornarHealthy()
     {
+        // Act
         var response =
             await _client.GetAsync("/health/ready");
 
+        var body =
+            await response.Content.ReadAsStringAsync();
+
+        // Assert
         Assert.Equal(
             HttpStatusCode.OK,
             response.StatusCode);
-
-        var body =
-            await response.Content.ReadAsStringAsync();
 
         Assert.Contains(
             "Healthy",
@@ -97,10 +115,12 @@ public class ApiIntegrationTests : IDisposable
     [Fact]
     public async Task RotaInexistente_DeveRetornar404()
     {
+        // Act
         var response =
             await _client.GetAsync(
                 "/api/rota-que-nao-existe");
 
+        // Assert
         Assert.Equal(
             HttpStatusCode.NotFound,
             response.StatusCode);
@@ -109,9 +129,11 @@ public class ApiIntegrationTests : IDisposable
     [Fact]
     public async Task BuscarProdutos_SemJwt_DeveRetornar401()
     {
+        // Act
         var response =
             await _client.GetAsync("/api/Product");
 
+        // Assert
         Assert.Equal(
             HttpStatusCode.Unauthorized,
             response.StatusCode);
@@ -120,14 +142,17 @@ public class ApiIntegrationTests : IDisposable
     [Fact]
     public async Task BuscarProdutos_JwtInvalido_DeveRetornar401()
     {
+        // Arrange
         _client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue(
                 "Bearer",
                 "token.invalido.vitalia");
 
+        // Act
         var response =
             await _client.GetAsync("/api/Product");
 
+        // Assert
         Assert.Equal(
             HttpStatusCode.Unauthorized,
             response.StatusCode);
@@ -136,6 +161,7 @@ public class ApiIntegrationTests : IDisposable
     [Fact]
     public async Task BuscarProdutos_JwtExpirado_DeveRetornar401()
     {
+        // Arrange
         var token = CreateToken(
             userId: 10,
             roles: ["TUTOR"],
@@ -143,9 +169,11 @@ public class ApiIntegrationTests : IDisposable
 
         Authenticate(token);
 
+        // Act
         var response =
             await _client.GetAsync("/api/Product");
 
+        // Assert
         Assert.Equal(
             HttpStatusCode.Unauthorized,
             response.StatusCode);
@@ -154,6 +182,7 @@ public class ApiIntegrationTests : IDisposable
     [Fact]
     public async Task CriarProduto_Tutor_DeveRetornar403()
     {
+        // Arrange
         Authenticate(
             CreateToken(
                 userId: 10,
@@ -168,11 +197,13 @@ public class ApiIntegrationTests : IDisposable
             stock = 10
         };
 
+        // Act
         var response =
             await _client.PostAsJsonAsync(
                 "/api/Product",
                 request);
 
+        // Assert
         Assert.Equal(
             HttpStatusCode.Forbidden,
             response.StatusCode);
@@ -181,14 +212,17 @@ public class ApiIntegrationTests : IDisposable
     [Fact]
     public async Task BuscarProdutos_TutorAutenticado_DeveRetornar200()
     {
+        // Arrange
         Authenticate(
             CreateToken(
                 userId: 10,
                 roles: ["TUTOR"]));
 
+        // Act
         var response =
             await _client.GetAsync("/api/Product");
 
+        // Assert
         Assert.Equal(
             HttpStatusCode.OK,
             response.StatusCode);
@@ -197,15 +231,18 @@ public class ApiIntegrationTests : IDisposable
     [Fact]
     public async Task BuscarProdutos_PaginaInvalida_DeveRetornar400()
     {
+        // Arrange
         Authenticate(
             CreateToken(
                 userId: 10,
                 roles: ["TUTOR"]));
 
+        // Act
         var response =
             await _client.GetAsync(
                 "/api/Product/paged?page=0&pageSize=10");
 
+        // Assert
         Assert.Equal(
             HttpStatusCode.BadRequest,
             response.StatusCode);
@@ -214,15 +251,18 @@ public class ApiIntegrationTests : IDisposable
     [Fact]
     public async Task BuscarProduto_Inexistente_DeveRetornar404()
     {
+        // Arrange
         Authenticate(
             CreateToken(
                 userId: 10,
                 roles: ["TUTOR"]));
 
+        // Act
         var response =
             await _client.GetAsync(
                 "/api/Product/999999");
 
+        // Assert
         Assert.Equal(
             HttpStatusCode.NotFound,
             response.StatusCode);
@@ -231,6 +271,7 @@ public class ApiIntegrationTests : IDisposable
     [Fact]
     public async Task CriarProduto_DadosInvalidos_DeveRetornar400()
     {
+        // Arrange
         Authenticate(
             CreateToken(
                 userId: 1,
@@ -245,11 +286,13 @@ public class ApiIntegrationTests : IDisposable
             stock = -1
         };
 
+        // Act
         var response =
             await _client.PostAsJsonAsync(
                 "/api/Product",
                 request);
 
+        // Assert
         Assert.Equal(
             HttpStatusCode.BadRequest,
             response.StatusCode);
@@ -267,7 +310,6 @@ public class ApiIntegrationTests : IDisposable
         var categoryId =
             await CreateCategoryAsync();
 
-        // CREATE
         var createRequest = new
         {
             categoryId,
@@ -277,11 +319,13 @@ public class ApiIntegrationTests : IDisposable
             stock = 20
         };
 
+        // Act - CREATE
         var createResponse =
             await _client.PostAsJsonAsync(
                 "/api/Product",
                 createRequest);
 
+        // Assert - CREATE
         Assert.Equal(
             HttpStatusCode.Created,
             createResponse.StatusCode);
@@ -292,16 +336,17 @@ public class ApiIntegrationTests : IDisposable
         var productId =
             createdJson.GetProperty("id").GetInt64();
 
-        // READ
+        // Act - READ
         var getResponse =
             await _client.GetAsync(
                 $"/api/Product/{productId}");
 
+        // Assert - READ
         Assert.Equal(
             HttpStatusCode.OK,
             getResponse.StatusCode);
 
-        // UPDATE
+        // Arrange - UPDATE
         var updateRequest = new
         {
             categoryId,
@@ -311,11 +356,13 @@ public class ApiIntegrationTests : IDisposable
             stock = 30
         };
 
+        // Act - UPDATE
         var updateResponse =
             await _client.PutAsJsonAsync(
                 $"/api/Product/{productId}",
                 updateRequest);
 
+        // Assert - UPDATE
         Assert.Equal(
             HttpStatusCode.NoContent,
             updateResponse.StatusCode);
@@ -345,11 +392,12 @@ public class ApiIntegrationTests : IDisposable
                 .GetProperty("stock")
                 .GetInt32());
 
-        // DELETE
+        // Act - DELETE
         var deleteResponse =
             await _client.DeleteAsync(
                 $"/api/Product/{productId}");
 
+        // Assert - DELETE
         Assert.Equal(
             HttpStatusCode.NoContent,
             deleteResponse.StatusCode);
@@ -366,7 +414,7 @@ public class ApiIntegrationTests : IDisposable
     [Fact]
     public async Task FluxoCompra_DeveCriarCarrinhoAdicionarProdutoCheckoutEGerenciarPedido()
     {
-
+        // Arrange - ADMIN cria categoria e produto
         Authenticate(
             CreateToken(
                 userId: 1,
@@ -383,15 +431,17 @@ public class ApiIntegrationTests : IDisposable
 
         const long tutorUserId = 42;
 
+        // Arrange - usuário TUTOR
         Authenticate(
             CreateToken(
                 tutorUserId,
                 ["TUTOR"]));
 
-        // Cria / obtém carrinho
+        // Act - cria / obtém carrinho
         var cartResponse =
             await _client.GetAsync("/api/Cart");
 
+        // Assert
         Assert.Equal(
             HttpStatusCode.OK,
             cartResponse.StatusCode);
@@ -408,7 +458,7 @@ public class ApiIntegrationTests : IDisposable
                 .GetProperty("userId")
                 .GetInt64());
 
-        // Adiciona 2 unidades
+        // Act - adiciona 2 unidades
         var addItemResponse =
             await _client.PostAsJsonAsync(
                 $"/api/Cart/{cartId}/items",
@@ -418,16 +468,18 @@ public class ApiIntegrationTests : IDisposable
                     quantity = 2
                 });
 
+        // Assert
         Assert.Equal(
             HttpStatusCode.OK,
             addItemResponse.StatusCode);
 
-        // Atualiza para 3 unidades
+        // Act - atualiza para 3 unidades
         var updateItemResponse =
             await _client.PutAsJsonAsync(
                 $"/api/Cart/{cartId}/items/{productId}",
                 3);
 
+        // Assert
         Assert.Equal(
             HttpStatusCode.OK,
             updateItemResponse.StatusCode);
@@ -441,11 +493,13 @@ public class ApiIntegrationTests : IDisposable
                 .GetProperty("total")
                 .GetDecimal());
 
+        // Act - checkout
         var checkoutResponse =
             await _client.PostAsync(
                 $"/api/Order/checkout/{cartId}",
                 null);
 
+        // Assert
         Assert.Equal(
             HttpStatusCode.OK,
             checkoutResponse.StatusCode);
@@ -468,10 +522,12 @@ public class ApiIntegrationTests : IDisposable
                 .GetProperty("totalAmount")
                 .GetDecimal());
 
+        // Act - pedidos do usuário
         var myOrdersResponse =
             await _client.GetAsync(
                 "/api/Order/my-orders");
 
+        // Assert
         Assert.Equal(
             HttpStatusCode.OK,
             myOrdersResponse.StatusCode);
@@ -482,19 +538,22 @@ public class ApiIntegrationTests : IDisposable
         Assert.True(
             myOrdersJson.GetArrayLength() >= 1);
 
+        // Act - consulta pedido
         var ownOrderResponse =
             await _client.GetAsync(
                 $"/api/Order/{orderId}");
 
+        // Assert
         Assert.Equal(
             HttpStatusCode.OK,
             ownOrderResponse.StatusCode);
 
-
+        // Act - consulta produto após checkout
         var productResponse =
             await _client.GetAsync(
                 $"/api/Product/{productId}");
 
+        // Assert
         Assert.Equal(
             HttpStatusCode.OK,
             productResponse.StatusCode);
@@ -507,59 +566,69 @@ public class ApiIntegrationTests : IDisposable
             productJson
                 .GetProperty("stock")
                 .GetInt32());
-        
 
+        // Arrange - ADMIN gerencia o pedido
         Authenticate(
             CreateToken(
                 userId: 1,
                 roles: ["ADMIN"]));
 
+        // Act - confirmar
         var confirmResponse =
             await _client.PutAsync(
                 $"/api/Order/{orderId}/confirm",
                 null);
 
+        // Assert
         Assert.Equal(
             HttpStatusCode.NoContent,
             confirmResponse.StatusCode);
 
+        // Act - processar
         var processResponse =
             await _client.PutAsync(
                 $"/api/Order/{orderId}/process",
                 null);
 
+        // Assert
         Assert.Equal(
             HttpStatusCode.NoContent,
             processResponse.StatusCode);
 
+        // Act - enviar
         var shipResponse =
             await _client.PutAsync(
                 $"/api/Order/{orderId}/ship",
                 null);
 
+        // Assert
         Assert.Equal(
             HttpStatusCode.NoContent,
             shipResponse.StatusCode);
 
+        // Act - entregar
         var deliverResponse =
             await _client.PutAsync(
                 $"/api/Order/{orderId}/deliver",
                 null);
 
+        // Assert
         Assert.Equal(
             HttpStatusCode.NoContent,
             deliverResponse.StatusCode);
-        
 
+        // Arrange - volta para TUTOR
         Authenticate(
             CreateToken(
                 tutorUserId,
                 ["TUTOR"]));
 
+        // Act - consulta estado final
         var finalOrderResponse =
             await _client.GetAsync(
                 $"/api/Order/{orderId}");
 
+        // Assert
         Assert.Equal(
             HttpStatusCode.OK,
             finalOrderResponse.StatusCode);
@@ -677,7 +746,9 @@ public class ApiIntegrationTests : IDisposable
 
         claims.AddRange(
             roles.Select(role =>
-                new Claim("roles", role)));
+                new Claim(
+                    "roles",
+                    role)));
 
         var key =
             new SymmetricSecurityKey(
@@ -715,9 +786,10 @@ public class ApiIntegrationTests : IDisposable
         return document.RootElement.Clone();
     }
 
-    public void Dispose()
+    public Task DisposeAsync()
     {
         _client.Dispose();
-        _factory.Dispose();
+
+        return Task.CompletedTask;
     }
 }
