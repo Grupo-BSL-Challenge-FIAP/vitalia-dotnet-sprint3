@@ -7,6 +7,8 @@ using Vitalia.API.Exceptions;
 using Vitalia.API.Configurations;
 using Vitalia.API.Health;
 using Vitalia.API.Extensions;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +18,23 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource =>
+        resource.AddService("Vitalia.API"))
+    .WithMetrics(metrics =>
+    {
+        metrics
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddRuntimeInstrumentation()
+            .AddMeter(
+                "Microsoft.AspNetCore.Hosting",
+                "Microsoft.AspNetCore.Routing",
+                "Microsoft.AspNetCore.Server.Kestrel",
+                "System.Net.Http",
+                "System.Runtime")
+            .AddPrometheusExporter();
+    });
 
 const string CorsPolicyName = "VitaliaFrontend";
 
