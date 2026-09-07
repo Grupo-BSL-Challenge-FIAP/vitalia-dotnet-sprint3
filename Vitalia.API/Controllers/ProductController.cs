@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Vitalia.Application.DTOs.Product;
 using Vitalia.Application.Interfaces.Services;
 using Vitalia.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Vitalia.API.Controllers;
 
@@ -11,6 +12,7 @@ namespace Vitalia.API.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Produces("application/json")]
+[Authorize]
 public class ProductController(
     IProductService productService,
     ILogger<ProductController> logger) : ControllerBase
