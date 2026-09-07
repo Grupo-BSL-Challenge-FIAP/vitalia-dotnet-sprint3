@@ -109,7 +109,8 @@ public class OrderController(
     /// </summary>
     /// <param name="id">Identificador do pedido.</param>
     /// <returns>Retorna 204 quando o pedido é confirmado.</returns>
-    [Authorize(Roles = "ADMIN")]
+    [Authorize(Roles = "ADMIN")] 
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]   
     [HttpPut("{id:long}/confirm")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(
@@ -141,7 +142,8 @@ public class OrderController(
     /// </summary>
     /// <param name="id">Identificador do pedido.</param>
     /// <returns>Retorna 204 quando o pedido é colocado em processamento.</returns>
-    [Authorize(Roles = "ADMIN")]
+    [Authorize(Roles = "ADMIN")] 
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]   
     [HttpPut("{id:long}/process")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(
@@ -173,7 +175,8 @@ public class OrderController(
     /// </summary>
     /// <param name="id">Identificador do pedido.</param>
     /// <returns>Retorna 204 quando o pedido é enviado.</returns>
-    [Authorize(Roles = "ADMIN")]
+    [Authorize(Roles = "ADMIN")] 
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]   
     [HttpPut("{id:long}/ship")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(
@@ -205,7 +208,8 @@ public class OrderController(
     /// </summary>
     /// <param name="id">Identificador do pedido.</param>
     /// <returns>Retorna 204 quando o pedido é marcado como entregue.</returns>
-    [Authorize(Roles = "ADMIN")]
+    [Authorize(Roles = "ADMIN")] 
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]   
     [HttpPut("{id:long}/deliver")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(

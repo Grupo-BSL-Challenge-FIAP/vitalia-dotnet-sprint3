@@ -90,6 +90,7 @@ public class CategoryController(
         typeof(ProblemDetails),
         StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = "ADMIN")]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> Create(
         [FromBody] CategoryRequest request)
     {
@@ -129,6 +130,7 @@ public class CategoryController(
         typeof(ProblemDetails),
         StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = "ADMIN")]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> Update(
         long id,
         [FromBody] CategoryRequest request)
@@ -156,6 +158,7 @@ public class CategoryController(
         typeof(ProblemDetails),
         StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = "ADMIN")]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> Delete(long id)
     {
         logger.LogInformation(
