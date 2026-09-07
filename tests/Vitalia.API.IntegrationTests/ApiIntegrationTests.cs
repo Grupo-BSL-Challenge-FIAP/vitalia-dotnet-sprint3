@@ -54,6 +54,45 @@ public class ApiIntegrationTests : IDisposable
             "Healthy",
             body);
     }
+    [Fact]
+    public async Task HealthLive_DeveRetornarHealthy()
+    {
+        var response =
+            await _client.GetAsync("/health/live");
+
+        Assert.Equal(
+            HttpStatusCode.OK,
+            response.StatusCode);
+
+        var body =
+            await response.Content.ReadAsStringAsync();
+
+        Assert.Contains(
+            "Healthy",
+            body);
+    }
+
+    [Fact]
+    public async Task HealthReady_DeveRetornarHealthy()
+    {
+        var response =
+            await _client.GetAsync("/health/ready");
+
+        Assert.Equal(
+            HttpStatusCode.OK,
+            response.StatusCode);
+
+        var body =
+            await response.Content.ReadAsStringAsync();
+
+        Assert.Contains(
+            "Healthy",
+            body);
+
+        Assert.Contains(
+            "Oracle",
+            body);
+    }
 
     [Fact]
     public async Task RotaInexistente_DeveRetornar404()
