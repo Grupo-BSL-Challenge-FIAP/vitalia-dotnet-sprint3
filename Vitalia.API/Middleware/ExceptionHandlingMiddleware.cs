@@ -41,10 +41,17 @@ public class ExceptionHandlingMiddleware
         var statusCode = exception switch
         {
             KeyNotFoundException => HttpStatusCode.NotFound,
+
             ArgumentException => HttpStatusCode.BadRequest,
+
             InvalidOperationException => HttpStatusCode.Conflict,
-            DbUpdateException dbException when IsForeignKeyViolation(dbException)
+
+            UnauthorizedAccessException => HttpStatusCode.Forbidden,
+
+            DbUpdateException dbException
+                when IsForeignKeyViolation(dbException)
                 => HttpStatusCode.Conflict,
+
             _ => HttpStatusCode.InternalServerError
         };
 
@@ -84,10 +91,20 @@ public class ExceptionHandlingMiddleware
     {
         return statusCode switch
         {
-            HttpStatusCode.BadRequest => "Dados inválidos.",
-            HttpStatusCode.NotFound => "Recurso não encontrado.",
-            HttpStatusCode.Conflict => "Conflito de regra de negócio.",
-            _ => "Erro interno do servidor."
+            HttpStatusCode.BadRequest =>
+                "Dados inválidos.",
+
+            HttpStatusCode.NotFound =>
+                "Recurso não encontrado.",
+
+            HttpStatusCode.Conflict =>
+                "Conflito de regra de negócio.",
+
+            HttpStatusCode.Forbidden =>
+                "Acesso negado.",
+
+            _ =>
+                "Erro interno do servidor."
         };
     }
 }
