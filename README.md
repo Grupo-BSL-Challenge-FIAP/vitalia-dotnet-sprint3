@@ -34,6 +34,7 @@ A API é responsável pelo gerenciamento de **categorias, produtos, carrinho de 
 - [📈 Cobertura de Testes](#-cobertura-de-testes)
 - [🐳 Docker](#-docker)
 - [📌 Funcionalidades Implementadas](#-funcionalidades-implementadas)
+- [🌐 Ambiente Publicado](#-ambiente-publicado)
 
 ---
 
@@ -870,3 +871,18 @@ http://localhost:8080
 - Docker.
 
 ---
+
+## 🌐 Ambiente Publicado
+
+A API do módulo comercial do Vitalia está publicada no **Render** e pode ser acessada pelos links abaixo.
+
+| Recurso | URL |
+|---|---|
+| 🚀 **API .NET** | https://vitalia-dotnet.onrender.com |
+| 📘 **Swagger / OpenAPI** | https://vitalia-dotnet.onrender.com/swagger |
+| 🩺 **Health Check** | https://vitalia-dotnet.onrender.com/health |
+| 💚 **Liveness** | https://vitalia-dotnet.onrender.com/health/live |
+| ✅ **Readiness** | https://vitalia-dotnet.onrender.com/health/ready |
+| 📊 **Métricas Prometheus** | https://vitalia-dotnet.onrender.com/metrics |
+
+> ℹ️ O serviço está hospedado no plano gratuito do Render. Após um período de inatividade, a primeira requisição pode levar alguns segundos para responder enquanto a instância é reativada.
