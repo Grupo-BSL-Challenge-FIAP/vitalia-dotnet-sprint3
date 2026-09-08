@@ -263,7 +263,7 @@ arquivo de credenciais da entrega.
 2. Realize login com um dos usuários de avaliação.
 3. Copie o JWT retornado.
 4. Acesse o Swagger da API .NET:
-   `http://localhost:5230/swagger`
+   `https://vitalia-dotnet.onrender.com/swagger`
 5. Clique em `Authorize`.
 6. Informe:
 
