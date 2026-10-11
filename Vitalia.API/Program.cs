@@ -20,7 +20,13 @@ builder.Host.UseSerilog((context, configuration) =>
         .ReadFrom.Configuration(context.Configuration)
         .Enrich.FromLogContext()
         .Enrich.WithProperty("Application", "Vitalia.API")
-        .WriteTo.Console();
+        .WriteTo.Console()
+        .WriteTo.File(
+            path: "logs/vitalia-.log",
+            rollingInterval: RollingInterval.Day,
+            retainedFileCountLimit: 7,
+            shared: true
+        );
 });
 
 builder.Services.AddControllers();
