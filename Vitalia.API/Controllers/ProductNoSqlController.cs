@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Vitalia.Application.DTOs.Product;
 using Vitalia.Application.Interfaces.Repositories;
+using Vitalia.API.Hateoas;
 
 namespace Vitalia.API.Controllers;
 
@@ -22,7 +23,7 @@ public class ProductNoSqlController(
     /// </summary>
     [HttpGet]
     [ProducesResponseType(
-        typeof(IEnumerable<ProductResponse>),
+        typeof(IEnumerable<HateoasResource<ProductResponse>>),
         StatusCodes.Status200OK
     )]
     [ProducesResponseType(
@@ -42,7 +43,10 @@ public class ProductNoSqlController(
         var products = await productNoSqlRepository
             .GetAllAsync();
 
-        return Ok(products);
+        var resources = products
+            .Select(CreateProductResource);
+
+        return Ok(resources);
     }
 
     /// <summary>
@@ -50,7 +54,7 @@ public class ProductNoSqlController(
     /// </summary>
     [HttpGet("{productId:int}")]
     [ProducesResponseType(
-        typeof(ProductResponse),
+        typeof(HateoasResource<ProductResponse>),
         StatusCodes.Status200OK
     )]
     [ProducesResponseType(
@@ -82,7 +86,9 @@ public class ProductNoSqlController(
             });
         }
 
-        return Ok(product);
+        var resource = CreateProductResource(product);
+
+        return Ok(resource);
     }
 
     /// <summary>
@@ -90,7 +96,7 @@ public class ProductNoSqlController(
     /// </summary>
     [HttpGet("status/{status}")]
     [ProducesResponseType(
-        typeof(IEnumerable<ProductResponse>),
+        typeof(IEnumerable<HateoasResource<ProductResponse>>),
         StatusCodes.Status200OK
     )]
     [ProducesResponseType(
@@ -111,6 +117,39 @@ public class ProductNoSqlController(
         var products = await productNoSqlRepository
             .GetByStatusAsync(status.ToUpperInvariant());
 
-        return Ok(products);
+        var resources = products
+            .Select(CreateProductResource);
+
+        return Ok(resources);
+    }
+
+    private static HateoasResource<ProductResponse> CreateProductResource(
+        ProductResponse product)
+    {
+        return new HateoasResource<ProductResponse>
+        {
+            Data = product,
+            Links =
+            [
+                new HateoasLink
+                {
+                    Rel = "self",
+                    Href = $"/api/nosql/products/{product.Id}",
+                    Method = "GET"
+                },
+                new HateoasLink
+                {
+                    Rel = "all-products",
+                    Href = "/api/nosql/products",
+                    Method = "GET"
+                },
+                new HateoasLink
+                {
+                    Rel = "status",
+                    Href = $"/api/nosql/products/status/{product.Status}",
+                    Method = "GET"
+                }
+            ]
+        };
     }
 }
