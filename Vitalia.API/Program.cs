@@ -11,6 +11,8 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Serilog;
+using MongoDB.Driver;
+using Vitalia.Infrastructure.NoSql.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -131,6 +133,37 @@ var connectionString =
 
 builder.Services.AddDbContext<VitaliaDbContext>(options =>
     options.UseOracle(connectionString));
+
+var mongoDbSettings = builder.Configuration
+                          .GetSection("MongoDb")
+                          .Get<MongoDbSettings>()
+                      ?? throw new InvalidOperationException(
+                          "A configuração 'MongoDb' não foi encontrada."
+                      );
+
+if (string.IsNullOrWhiteSpace(mongoDbSettings.ConnectionString))
+{
+    throw new InvalidOperationException(
+        "A configuração 'MongoDb:ConnectionString' não foi encontrada."
+    );
+}
+
+if (string.IsNullOrWhiteSpace(mongoDbSettings.DatabaseName))
+{
+    throw new InvalidOperationException(
+        "A configuração 'MongoDb:DatabaseName' não foi encontrada."
+    );
+}
+
+var mongoClient =
+    new MongoClient(mongoDbSettings.ConnectionString);
+
+builder.Services.AddSingleton(mongoDbSettings);
+builder.Services.AddSingleton<IMongoClient>(mongoClient);
+
+builder.Services.AddSingleton<IMongoDatabase>(
+    _ => mongoClient.GetDatabase(
+        mongoDbSettings.DatabaseName));
 
 builder.Services
     .AddHealthChecks()
