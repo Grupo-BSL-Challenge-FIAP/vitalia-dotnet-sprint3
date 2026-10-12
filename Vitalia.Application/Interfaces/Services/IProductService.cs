@@ -9,7 +9,11 @@ public interface IProductService
 
     Task<ProductResponse?> GetByIdAsync(long id);
 
-    Task<ProductPagedResponse> GetPagedAsync(int page, int pageSize);
+    Task<ProductPagedResponse> GetPagedAsync(
+        int page,
+        int pageSize,
+        string sortBy,
+        string sortDirection);
 
     Task<ProductResponse> AddAsync(ProductRequest request);
 
