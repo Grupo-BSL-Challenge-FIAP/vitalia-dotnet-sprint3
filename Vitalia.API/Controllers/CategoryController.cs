@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Vitalia.Application.DTOs.Category;
 using Vitalia.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
+using Vitalia.API.Hateoas;
 
 namespace Vitalia.API.Controllers;
 
@@ -23,7 +24,7 @@ public class CategoryController(
     /// <returns>Lista de categorias.</returns>
     [HttpGet]
     [ProducesResponseType(
-        typeof(IEnumerable<CategoryResponse>),
+        typeof(IEnumerable<HateoasResource<CategoryResponse>>),
         StatusCodes.Status200OK)]
     [ProducesResponseType(
         typeof(ProblemDetails),
@@ -34,7 +35,8 @@ public class CategoryController(
 
         var categories = await categoryService.GetAllAsync();
 
-        return Ok(categories);
+        var resources = categories.Select(CreateCategoryResource);
+        return Ok(resources);
     }
 
     /// <summary>
@@ -44,7 +46,7 @@ public class CategoryController(
     /// <returns>Categoria encontrada.</returns>
     [HttpGet("{id:long}")]
     [ProducesResponseType(
-        typeof(CategoryResponse),
+        typeof(HateoasResource<CategoryResponse>),
         StatusCodes.Status200OK)]
     [ProducesResponseType(
         typeof(ProblemDetails),
@@ -71,7 +73,9 @@ public class CategoryController(
             });
         }
 
-        return Ok(category);
+        var resource = CreateCategoryResource(category);
+
+        return Ok(resource);
     }
 
     /// <summary>
@@ -169,5 +173,47 @@ public class CategoryController(
         await categoryService.DeleteAsync(id);
 
         return NoContent();
+    }
+
+    private static HateoasResource<CategoryResponse> CreateCategoryResource(
+        CategoryResponse category)
+    {
+        return new HateoasResource<CategoryResponse>
+        {
+            Data = category,
+            Links =
+            [
+                new HateoasLink
+                {
+                    Rel = "self",
+                    Href = $"/api/Category/{category.Id}",
+                    Method = "GET"
+                },
+                new HateoasLink
+                {
+                    Rel = "all-categories",
+                    Href = "/api/Category",
+                    Method = "GET"
+                },
+                new HateoasLink
+                {
+                    Rel = "products",
+                    Href = $"/api/Product/category/{category.Id}",
+                    Method = "GET"
+                },
+                new HateoasLink
+                {
+                    Rel = "update",
+                    Href = $"/api/Category/{category.Id}",
+                    Method = "PUT"
+                },
+                new HateoasLink
+                {
+                    Rel = "delete",
+                    Href = $"/api/Category/{category.Id}",
+                    Method = "DELETE"
+                }
+            ]
+        };
     }
 }
