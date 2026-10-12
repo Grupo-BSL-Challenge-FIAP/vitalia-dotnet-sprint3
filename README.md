@@ -152,7 +152,7 @@ A aplicação também utiliza **Injeção de Dependência**, **Repository Patter
 
 ## 🧭 Diagrama de Arquitetura
 
-<img width="898" height="1010" alt="image" src="https://github.com/user-attachments/assets/41fa0225-6705-498b-8eca-9055d9439544" />
+<img width="910" height="1010" alt="image" src="https://github.com/user-attachments/assets/12f07583-30eb-471c-b7c0-8d9cfdd66fa6" />
 
 O **Oracle Database** é utilizado como banco relacional principal do módulo comercial.
 
