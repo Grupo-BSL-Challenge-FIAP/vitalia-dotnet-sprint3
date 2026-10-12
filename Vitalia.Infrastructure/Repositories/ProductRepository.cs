@@ -47,13 +47,42 @@ public class ProductRepository : IProductRepository
 
     public async Task<(IEnumerable<Product> Items, int TotalItems)> GetPagedAsync(
         int page,
-        int pageSize)
+        int pageSize,
+        string sortBy,
+        string sortDirection)
     {
         var query = _context.Products
-            .AsNoTracking()
-            .OrderBy(p => p.Id);
+            .AsNoTracking();
 
         var totalItems = await query.CountAsync();
+
+        var descending = sortDirection.Equals(
+            "desc",
+            StringComparison.OrdinalIgnoreCase
+        );
+
+        query = sortBy.ToLowerInvariant() switch
+        {
+            "name" => descending
+                ? query.OrderByDescending(p => p.Name)
+                : query.OrderBy(p => p.Name),
+
+            "price" => descending
+                ? query.OrderByDescending(p => p.Price)
+                : query.OrderBy(p => p.Price),
+
+            "stock" => descending
+                ? query.OrderByDescending(p => p.Stock)
+                : query.OrderBy(p => p.Stock),
+
+            "createdat" => descending
+                ? query.OrderByDescending(p => p.CreatedAt)
+                : query.OrderBy(p => p.CreatedAt),
+
+            _ => descending
+                ? query.OrderByDescending(p => p.Id)
+                : query.OrderBy(p => p.Id)
+        };
 
         var items = await query
             .Skip((page - 1) * pageSize)
