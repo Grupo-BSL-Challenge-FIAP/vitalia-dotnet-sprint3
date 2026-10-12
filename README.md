@@ -261,15 +261,7 @@ Representa um item pertencente a um pedido, preservando os dados necessários pa
 
 ## 🔁 Relacionamentos
 
-```txt
-Category 1:N Product
-
-Cart 1:N CartItem
-Product 1:N CartItem
-
-Order 1:N OrderItem
-Product 1:N OrderItem
-```
+<img width="788" height="527" alt="image" src="https://github.com/user-attachments/assets/a6914912-3d77-471c-bb94-4c66b079d848" />
 
 Os carrinhos e pedidos também são associados ao identificador do usuário autenticado recebido através do JWT emitido pelo backend Java do Vitalia.
 
