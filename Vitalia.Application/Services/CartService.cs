@@ -137,6 +137,8 @@ public class CartService : ICartService
         }
 
         cart.Touch();
+        
+        _cartRepository.Update(cart);
 
         await _unitOfWork.SaveChangesAsync();
 
@@ -207,6 +209,8 @@ public class CartService : ICartService
         _cartItemRepository.Update(item);
 
         cart.Touch();
+        
+        _cartRepository.Update(cart);
 
         await _unitOfWork.SaveChangesAsync();
 
@@ -243,6 +247,8 @@ public class CartService : ICartService
         _cartItemRepository.Delete(item);
 
         cart.Touch();
+        
+        _cartRepository.Update(cart);
 
         await _unitOfWork.SaveChangesAsync();
     }
