@@ -152,7 +152,7 @@ A aplicação também utiliza **Injeção de Dependência**, **Repository Patter
 
 ## 🧭 Diagrama de Arquitetura
 
-<img width="910" height="1010" alt="image" src="https://github.com/user-attachments/assets/12f07583-30eb-471c-b7c0-8d9cfdd66fa6" />
+![Arquitetura do Módulo Comercial Vitalia](docs/arquitetura-vitalia.png)
 
 O **Oracle Database** é utilizado como banco relacional principal do módulo comercial.
 
@@ -261,7 +261,7 @@ Representa um item pertencente a um pedido, preservando os dados necessários pa
 
 ## 🔁 Relacionamentos
 
-<img width="788" height="527" alt="image" src="https://github.com/user-attachments/assets/a6914912-3d77-471c-bb94-4c66b079d848" />
+![Modelo de Relacionamentos do Módulo Comercial](docs/relacionamentos-vitalia.png)
 
 Os carrinhos e pedidos também são associados ao identificador do usuário autenticado recebido através do JWT emitido pelo backend Java do Vitalia.
 
