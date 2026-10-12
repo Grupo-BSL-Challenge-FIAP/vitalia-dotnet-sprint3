@@ -13,6 +13,7 @@ public static class VitaliaServiceCollectionExtensions
         this IServiceCollection services)
     {
         services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IProductNoSqlRepository, ProductNoSqlRepository>();
         services.AddScoped<IProductService, ProductService>();
 
         services.AddScoped<ICategoryRepository, CategoryRepository>();
