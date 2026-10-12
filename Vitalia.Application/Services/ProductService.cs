@@ -40,10 +40,17 @@ public class ProductService : IProductService
     
     public async Task<ProductPagedResponse> GetPagedAsync(
         int page,
-        int pageSize)
+        int pageSize,
+        string sortBy,
+        string sortDirection)
     {
         var (items, totalItems) =
-            await _productRepository.GetPagedAsync(page, pageSize);
+            await _productRepository.GetPagedAsync(
+                page,
+                pageSize,
+                sortBy,
+                sortDirection
+            );
 
         var totalPages = (int)Math.Ceiling(
             (double)totalItems / pageSize
