@@ -3,6 +3,7 @@ using Vitalia.Application.DTOs.Product;
 using Vitalia.Application.Interfaces.Services;
 using Vitalia.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
+using Vitalia.API.Hateoas;
 
 namespace Vitalia.API.Controllers;
 
@@ -24,17 +25,26 @@ public class ProductController(
     /// <response code="200">Produtos encontrados.</response>
     /// <response code="500">Erro interno do servidor.</response>
     [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<ProductResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(
+        typeof(IEnumerable<HateoasResource<ProductResponse>>),
+        StatusCodes.Status200OK
+    )]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status500InternalServerError
+    )]
     public async Task<IActionResult> GetAll()
     {
         logger.LogInformation("Listando produtos.");
 
         var products = await productService.GetAllAsync();
 
-        return Ok(products);
+        var resources = products
+            .Select(CreateProductResource);
+
+        return Ok(resources);
     }
-    
+
     /// <summary>
     /// Retorna uma lista paginada e ordenada de produtos.
     /// </summary>
@@ -60,8 +70,14 @@ public class ProductController(
     /// Os parâmetros informados são inválidos.
     /// </response>
     [HttpGet("paged")]
-    [ProducesResponseType(typeof(ProductPagedResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(
+        typeof(HateoasResource<ProductPagedResponse>),
+        StatusCodes.Status200OK
+    )]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status400BadRequest
+    )]
     public async Task<IActionResult> GetPaged(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
@@ -140,9 +156,30 @@ public class ProductController(
             sortDirection
         );
 
-        return Ok(products);
+        var resource = new HateoasResource<ProductPagedResponse>
+        {
+            Data = products,
+            Links =
+            [
+                new HateoasLink
+                {
+                    Rel = "self",
+                    Href =
+                        $"/api/Product/paged?page={page}&pageSize={pageSize}&sortBy={sortBy}&sortDirection={sortDirection}",
+                    Method = "GET"
+                },
+                new HateoasLink
+                {
+                    Rel = "all-products",
+                    Href = "/api/Product",
+                    Method = "GET"
+                }
+            ]
+        };
+
+        return Ok(resource);
     }
-    
+
     /// <summary>
     /// Busca um produto pelo ID.
     /// </summary>
@@ -151,13 +188,22 @@ public class ProductController(
     /// <response code="404">Produto não encontrado.</response>
     /// <response code="500">Erro interno do servidor.</response>
     [HttpGet("{id:long}")]
-    [ProducesResponseType(typeof(ProductResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(
+        typeof(HateoasResource<ProductResponse>),
+        StatusCodes.Status200OK
+    )]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status404NotFound
+    )]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status500InternalServerError
+    )]
     public async Task<IActionResult> GetById(long id)
     {
         logger.LogInformation(
-            "Buscando produto por ID: {ProductId}",
+            "Buscando produto: {ProductId}",
             id
         );
 
@@ -173,9 +219,11 @@ public class ProductController(
             });
         }
 
-        return Ok(product);
+        var resource = CreateProductResource(product);
+
+        return Ok(resource);
     }
-    
+
     /// <summary>
     /// Lista os produtos de uma determinada categoria.
     /// </summary>
@@ -183,8 +231,14 @@ public class ProductController(
     /// <response code="200">Produtos encontrados.</response>
     /// <response code="500">Erro interno do servidor.</response>
     [HttpGet("category/{categoryId:long}")]
-    [ProducesResponseType(typeof(IEnumerable<ProductResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(
+        typeof(IEnumerable<HateoasResource<ProductResponse>>),
+        StatusCodes.Status200OK
+    )]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status500InternalServerError
+    )]
     public async Task<IActionResult> GetByCategory(long categoryId)
     {
         logger.LogInformation(
@@ -192,11 +246,15 @@ public class ProductController(
             categoryId
         );
 
-        var products = await productService.GetByCategoryIdAsync(categoryId);
+        var products = await productService
+            .GetByCategoryIdAsync(categoryId);
 
-        return Ok(products);
+        var resources = products
+            .Select(CreateProductResource);
+
+        return Ok(resources);
     }
-    
+
     /// <summary>
     /// Lista os produtos de acordo com o status.
     /// </summary>
@@ -204,8 +262,14 @@ public class ProductController(
     /// <response code="200">Produtos encontrados.</response>
     /// <response code="500">Erro interno do servidor.</response>
     [HttpGet("status/{status}")]
-    [ProducesResponseType(typeof(IEnumerable<ProductResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(
+        typeof(IEnumerable<HateoasResource<ProductResponse>>),
+        StatusCodes.Status200OK
+    )]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status500InternalServerError
+    )]
     public async Task<IActionResult> GetByStatus(ProductStatus status)
     {
         logger.LogInformation(
@@ -213,9 +277,13 @@ public class ProductController(
             status
         );
 
-        var products = await productService.GetByStatusAsync(status);
+        var products = await productService
+            .GetByStatusAsync(status);
 
-        return Ok(products);
+        var resources = products
+            .Select(CreateProductResource);
+
+        return Ok(resources);
     }
 
     /// <summary>
@@ -226,12 +294,22 @@ public class ProductController(
     /// <response code="400">Dados inválidos.</response>
     /// <response code="500">Erro interno do servidor.</response>
     [HttpPost]
-    [ProducesResponseType(typeof(ProductResponse), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(
+        typeof(ProductResponse),
+        StatusCodes.Status201Created
+    )]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status400BadRequest
+    )]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status500InternalServerError
+    )]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [Authorize(Roles = "ADMIN")]
-    public async Task<IActionResult> Create([FromBody] ProductRequest request)
+    public async Task<IActionResult> Create(
+        [FromBody] ProductRequest request)
     {
         logger.LogInformation(
             "Iniciando cadastro do produto: {ProductName}",
@@ -263,9 +341,18 @@ public class ProductController(
     /// <response code="500">Erro interno do servidor.</response>
     [HttpPut("{id:long}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status400BadRequest
+    )]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status404NotFound
+    )]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status500InternalServerError
+    )]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> Update(
@@ -291,8 +378,14 @@ public class ProductController(
     /// <response code="500">Erro interno do servidor.</response>
     [HttpDelete("{id:long}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status404NotFound
+    )]
+    [ProducesResponseType(
+        typeof(ProblemDetails),
+        StatusCodes.Status500InternalServerError
+    )]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> Delete(long id)
@@ -305,5 +398,41 @@ public class ProductController(
         await productService.DeleteAsync(id);
 
         return NoContent();
+    }
+
+    private static HateoasResource<ProductResponse> CreateProductResource(
+        ProductResponse product)
+    {
+        return new HateoasResource<ProductResponse>
+        {
+            Data = product,
+            Links =
+            [
+                new HateoasLink
+                {
+                    Rel = "self",
+                    Href = $"/api/Product/{product.Id}",
+                    Method = "GET"
+                },
+                new HateoasLink
+                {
+                    Rel = "all-products",
+                    Href = "/api/Product",
+                    Method = "GET"
+                },
+                new HateoasLink
+                {
+                    Rel = "update",
+                    Href = $"/api/Product/{product.Id}",
+                    Method = "PUT"
+                },
+                new HateoasLink
+                {
+                    Rel = "delete",
+                    Href = $"/api/Product/{product.Id}",
+                    Method = "DELETE"
+                }
+            ]
+        };
     }
 }
