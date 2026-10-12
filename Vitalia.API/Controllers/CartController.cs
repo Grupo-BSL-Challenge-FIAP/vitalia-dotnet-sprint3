@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Vitalia.Application.DTOs.Cart;
 using Vitalia.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
+using Vitalia.API.Hateoas;
 
 namespace Vitalia.API.Controllers;
 
@@ -22,7 +23,7 @@ public class CartController(
     /// Caso não exista, um novo carrinho é criado.
     /// </summary>
     [HttpGet]
-    [ProducesResponseType(typeof(CartResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(HateoasResource<CartResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetCurrentUserCart()
@@ -34,14 +35,28 @@ public class CartController(
         var cart = await cartService
             .GetOrCreateActiveCartAsync();
 
-        return Ok(cart);
+        var resource = new HateoasResource<CartResponse>
+        {
+            Data = cart,
+            Links =
+            [
+                new HateoasLink
+                {
+                    Rel = "self",
+                    Href = "/api/Cart",
+                    Method = "GET"
+                }
+            ]
+        };
+
+        return Ok(resource);
     }
 
     /// <summary>
     /// Busca um carrinho pelo ID.
     /// </summary>
     [HttpGet("{id:long}")]
-    [ProducesResponseType(typeof(CartResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(HateoasResource<CartResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(long id)
     {
@@ -62,7 +77,39 @@ public class CartController(
             });
         }
 
-        return Ok(cart);
+        var resource = new HateoasResource<CartResponse>
+        {
+            Data = cart,
+            Links =
+            [
+                new HateoasLink
+                {
+                    Rel = "self",
+                    Href = $"/api/Cart/{id}",
+                    Method = "GET"
+                },
+                new HateoasLink
+                {
+                    Rel = "current-cart",
+                    Href = "/api/Cart",
+                    Method = "GET"
+                },
+                new HateoasLink
+                {
+                    Rel = "add-item",
+                    Href = $"/api/Cart/{id}/items",
+                    Method = "POST"
+                },
+                new HateoasLink
+                {
+                    Rel = "checkout",
+                    Href = $"/api/Order/checkout/{id}",
+                    Method = "POST"
+                }
+            ]
+        };
+
+        return Ok(resource);
     }
 
     /// <summary>
