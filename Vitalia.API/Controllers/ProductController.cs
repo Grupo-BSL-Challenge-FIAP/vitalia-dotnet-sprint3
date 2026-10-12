@@ -36,13 +36,19 @@ public class ProductController(
     }
     
     /// <summary>
-    /// Retorna uma lista paginada de produtos.
+    /// Retorna uma lista paginada e ordenada de produtos.
     /// </summary>
     /// <param name="page">
     /// Número da página que será retornada.
     /// </param>
     /// <param name="pageSize">
     /// Quantidade de produtos por página.
+    /// </param>
+    /// <param name="sortBy">
+    /// Campo utilizado para ordenação: id, name, price, stock ou createdAt.
+    /// </param>
+    /// <param name="sortDirection">
+    /// Direção da ordenação: asc ou desc.
     /// </param>
     /// <returns>
     /// Lista paginada contendo os produtos e informações de paginação.
@@ -51,22 +57,88 @@ public class ProductController(
     /// Produtos retornados com sucesso.
     /// </response>
     /// <response code="400">
-    /// A página ou o tamanho da página informado é inválido.
+    /// Os parâmetros informados são inválidos.
     /// </response>
     [HttpGet("paged")]
     [ProducesResponseType(typeof(ProductPagedResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetPaged(
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 10)
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string sortBy = "id",
+        [FromQuery] string sortDirection = "asc")
     {
         if (page < 1)
-            return BadRequest("A página deve ser maior que zero.");
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Página inválida.",
+                Detail = "A página deve ser maior que zero.",
+                Status = StatusCodes.Status400BadRequest
+            });
+        }
 
         if (pageSize < 1 || pageSize > 100)
-            return BadRequest("O tamanho da página deve estar entre 1 e 100.");
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Tamanho da página inválido.",
+                Detail = "O tamanho da página deve estar entre 1 e 100.",
+                Status = StatusCodes.Status400BadRequest
+            });
+        }
 
-        var products = await productService.GetPagedAsync(page, pageSize);
+        var validSortFields = new[]
+        {
+            "id",
+            "name",
+            "price",
+            "stock",
+            "createdAt"
+        };
+
+        if (!validSortFields.Contains(
+                sortBy,
+                StringComparer.OrdinalIgnoreCase))
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Campo de ordenação inválido.",
+                Detail =
+                    "Utilize id, name, price, stock ou createdAt.",
+                Status = StatusCodes.Status400BadRequest
+            });
+        }
+
+        if (!sortDirection.Equals(
+                "asc",
+                StringComparison.OrdinalIgnoreCase) &&
+            !sortDirection.Equals(
+                "desc",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Direção de ordenação inválida.",
+                Detail = "Utilize asc ou desc.",
+                Status = StatusCodes.Status400BadRequest
+            });
+        }
+
+        logger.LogInformation(
+            "Listando produtos paginados. Página: {Page}, Tamanho: {PageSize}, Ordenação: {SortBy} {SortDirection}.",
+            page,
+            pageSize,
+            sortBy,
+            sortDirection
+        );
+
+        var products = await productService.GetPagedAsync(
+            page,
+            pageSize,
+            sortBy,
+            sortDirection
+        );
 
         return Ok(products);
     }
