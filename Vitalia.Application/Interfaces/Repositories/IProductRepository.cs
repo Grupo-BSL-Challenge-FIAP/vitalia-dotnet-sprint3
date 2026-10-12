@@ -15,8 +15,10 @@ public interface IProductRepository
 
     Task<(IEnumerable<Product> Items, int TotalItems)> GetPagedAsync(
         int page,
-        int pageSize);
-
+        int pageSize,
+        string sortBy,
+        string sortDirection);
+    
     Task AddAsync(Product product);
 
     void Update(Product product);
