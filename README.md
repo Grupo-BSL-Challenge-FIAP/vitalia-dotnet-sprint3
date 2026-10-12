@@ -863,13 +863,13 @@ Exemplo de configuração de desenvolvimento:
 ### 1. Clonar o repositório
 
 ```bash
-git clone https://github.com/Grupo-BSL-Challenge-FIAP/vitalia-dotnet-sprint3
+https://github.com/Grupo-BSL-Challenge-FIAP/vitalia-dotnet-sprint4.git
 ```
 
 ### 2. Entrar na pasta do projeto
 
 ```bash
-cd vitalia-dotnet-sprint3
+cd vitalia-dotnet-sprint4
 ```
 
 ### 3. Restaurar as dependências
