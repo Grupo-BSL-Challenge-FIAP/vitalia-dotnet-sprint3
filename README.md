@@ -6,7 +6,9 @@
 
 API REST desenvolvida em **ASP.NET Core / .NET 10** para o módulo comercial da plataforma **Vitalia**.
 
-A API é responsável pelo gerenciamento de **categorias, produtos, carrinho de compras, checkout e pedidos**, utilizando **Oracle Database** com **Entity Framework Core**. A autenticação é integrada ao backend Java do Vitalia: o serviço Java emite o JWT e a API .NET valida o token localmente para identificar o usuário e suas permissões.
+A API é responsável pelo gerenciamento de **categorias, produtos, carrinho de compras, checkout e pedidos**, utilizando **Oracle Database com Entity Framework Core** para persistência relacional e **MongoDB** para operações de consulta NoSQL.
+
+A autenticação é integrada ao backend Java do Vitalia: o serviço Java emite o JWT e a API .NET valida o token localmente para identificar o usuário e suas permissões.
 
 ---
 
@@ -15,6 +17,7 @@ A API é responsável pelo gerenciamento de **categorias, produtos, carrinho de 
 - [👥 Integrantes](#-integrantes)
 - [📚 Sobre o Projeto](#-sobre-o-projeto)
 - [🏗️ Arquitetura](#️-arquitetura)
+- [🧭 Diagrama de Arquitetura](#-diagrama-de-arquitetura)
 - [📁 Estrutura da Solução](#-estrutura-da-solução)
 - [🚀 Tecnologias Utilizadas](#-tecnologias-utilizadas)
 - [📦 Entidades](#-entidades)
@@ -23,12 +26,14 @@ A API é responsável pelo gerenciamento de **categorias, produtos, carrinho de 
 - [🔐 Autenticação e Autorização](#-autenticação-e-autorização)
 - [☕ Integração com a API Java](#-integração-com-a-api-java)
 - [📡 Endpoints](#-endpoints)
+- [🔗 HATEOAS](#-hateoas)
 - [📄 HTTP Status Codes](#-http-status-codes)
 - [📘 Swagger / OpenAPI](#-swagger--openapi)
 - [🩺 Health Checks](#-health-checks)
 - [📝 Logs com Serilog](#-logs-com-serilog)
 - [📊 OpenTelemetry e Prometheus](#-opentelemetry-e-prometheus)
 - [🗄️ Banco de Dados e Migrations](#️-banco-de-dados-e-migrations)
+- [🍃 MongoDB](#-mongodb)
 - [⚙️ Como Executar](#️-como-executar)
 - [🧪 Testes](#-testes)
 - [📈 Cobertura de Testes](#-cobertura-de-testes)
@@ -86,8 +91,11 @@ As principais responsabilidades deste serviço são:
 - Checkout;
 - Criação de pedidos;
 - Atualização do ciclo de vida dos pedidos;
-- Persistência no Oracle Database;
+- Persistência relacional no Oracle Database;
+- Consultas NoSQL no MongoDB;
 - Autenticação JWT integrada ao backend Java;
+- HATEOAS nos endpoints de consulta;
+- Paginação, ordenação e filtros;
 - Monitoramento, logs, tracing e métricas;
 - Testes unitários e de integração.
 
@@ -95,7 +103,11 @@ As principais responsabilidades deste serviço são:
 
 ## 🏗️ Arquitetura
 
-O projeto foi estruturado utilizando separação de responsabilidades entre **API, Application, Domain e Infrastructure**.
+O projeto foi estruturado seguindo princípios de **Clean Architecture**, com separação das responsabilidades entre as camadas **API, Application, Domain e Infrastructure**.
+
+A organização busca manter as regras de negócio independentes de detalhes de persistência, transporte HTTP e tecnologias externas.
+
+### Responsabilidades das camadas
 
 ```txt
 Vitalia.API
@@ -103,7 +115,8 @@ Vitalia.API
 → Configurations
 → Exceptions
 → Extensions
-→ Health
+→ HATEOAS
+→ Health Checks
 → Swagger / OpenAPI
 → Program.cs
 
@@ -120,8 +133,9 @@ Vitalia.Domain
 
 Vitalia.Infrastructure
 → DbContext
-→ Configurations
+→ Entity Framework Core
 → Repositories
+→ MongoDB
 → Migrations
 
 Tests
@@ -131,6 +145,20 @@ Tests
 ```
 
 A separação permite manter as regras de negócio desacopladas da persistência, da API HTTP e das ferramentas de infraestrutura.
+
+A aplicação também utiliza **Injeção de Dependência**, **Repository Pattern**, **Service Layer**, tratamento global de exceções e separação das regras de negócio da infraestrutura.
+
+---
+
+## 🧭 Diagrama de Arquitetura
+
+daqui a pouco coloco arquitetura
+
+O **Oracle Database** é utilizado como banco relacional principal do módulo comercial.
+
+O **MongoDB** é utilizado como banco NoSQL para consultas de produtos através de endpoints específicos.
+
+A autenticação é centralizada na API Java, enquanto a API .NET valida localmente os JWTs recebidos.
 
 ---
 
@@ -144,6 +172,7 @@ Vitalia/
 │   ├── Controllers/
 │   ├── Exceptions/
 │   ├── Extensions/
+│   ├── Hateoas/
 │   ├── Health/
 │   ├── Program.cs
 │   └── Vitalia.API.csproj
@@ -156,6 +185,7 @@ Vitalia/
 │   └── Vitalia.Application.csproj
 │
 ├── Vitalia.Domain/
+│   ├── Common/
 │   ├── Entities/
 │   ├── Enums/
 │   └── Vitalia.Domain.csproj
@@ -180,10 +210,14 @@ Vitalia/
 - ASP.NET Core Web API
 - Entity Framework Core
 - Oracle Database
+- MongoDB
+- MongoDB.Driver
 - Swagger / OpenAPI
 - Swashbuckle
 - JWT Bearer Authentication
+- HATEOAS
 - Serilog
+- Serilog.Sinks.File
 - OpenTelemetry
 - Prometheus
 - xUnit
@@ -241,37 +275,36 @@ Os carrinhos e pedidos também são associados ao identificador do usuário aute
 
 ---
 
-### 👤 Usuários de avaliação
+## 👤 Usuários de Avaliação
 
-Foram criados usuários específicos para facilitar os testes da integração
-entre a API Java e a API .NET.
+Foram criados usuários específicos para facilitar os testes da integração entre a API Java e a API .NET.
 
 | Perfil | E-mail |
 |---|---|
 | TUTOR | `avaliacao@tutor.com.br` |
 | ADMIN | `avaliacao@vitaliaadmin.com.br` |
 
-As senhas dos usuários de avaliação são fornecidas separadamente no
-arquivo de credenciais da entrega.
+As senhas dos usuários de avaliação são fornecidas separadamente no arquivo de credenciais da entrega.
 
 > As contas acima foram criadas exclusivamente para demonstração e avaliação acadêmica.
 
-#### Fluxo de teste
+### Fluxo de teste
 
-1. Acesse o Swagger da API Java:
+1. Acesse o Swagger da API Java:  
    `https://vitalia-txa9.onrender.com/swagger-ui/index.html#/`
 2. Realize login com um dos usuários de avaliação.
 3. Copie o JWT retornado.
-4. Acesse o Swagger da API .NET:
+4. Acesse o Swagger da API .NET:  
    `https://vitalia-dotnet.onrender.com/swagger`
 5. Clique em `Authorize`.
 6. Informe:
 
-   `Bearer SEU_TOKEN_JWT`
+```txt
+Bearer SEU_TOKEN_JWT
+```
 
 7. Utilize o usuário `TUTOR` para testar carrinho, checkout e pedidos.
-8. Utilize o usuário `ADMIN` para testar cadastro de categorias,
-   produtos e atualização do ciclo de vida dos pedidos.
+8. Utilize o usuário `ADMIN` para testar cadastro de categorias, produtos e atualização do ciclo de vida dos pedidos.
 
 ---
 
@@ -305,7 +338,9 @@ VETERINARIAN
 ADMIN
 ```
 
-As operações administrativas de catálogo e de evolução do status dos pedidos exigem a role `ADMIN`. Operações relacionadas ao carrinho e aos pedidos do próprio usuário exigem autenticação.
+As operações administrativas de catálogo e de evolução do status dos pedidos exigem a role `ADMIN`.
+
+Operações relacionadas ao carrinho e aos pedidos do próprio usuário exigem autenticação.
 
 No Swagger, utilize o botão **Authorize** e informe:
 
@@ -315,28 +350,33 @@ Bearer SEU_TOKEN_JWT
 
 ---
 
-### ☕ Integração com a API Java
+## ☕ Integração com a API Java
 
 A autenticação do Vitalia é centralizada no backend Java.
 
-A API Java é responsável pelo cadastro dos usuários, autenticação e emissão
-dos tokens JWT utilizados para acessar os endpoints protegidos da API .NET.
+A API Java é responsável pelo cadastro dos usuários, autenticação e emissão dos tokens JWT utilizados para acessar os endpoints protegidos da API .NET.
 
-#### Ambiente publicado
+### Ambiente publicado
 
 Swagger UI:
 
+```txt
 https://vitalia-txa9.onrender.com/swagger-ui/index.html#/
+```
 
-#### Ambiente local
+### Ambiente local
 
 Swagger UI:
 
+```txt
 http://localhost:8080/swagger-ui/index.html
+```
 
-#### Backend Java do Vitalia:
+### Backend Java do Vitalia
 
+```txt
 https://github.com/Grupo-BSL-Challenge-FIAP/vitalia-JavaAdvanced-Sprint3
+```
 
 O fluxo para testar a integração é:
 
@@ -347,7 +387,9 @@ O fluxo para testar a integração é:
 5. Clicar em `Authorize`;
 6. Informar:
 
+```txt
 Bearer SEU_TOKEN_JWT
+```
 
 7. Executar os endpoints comerciais do Vitalia.
 
@@ -370,13 +412,57 @@ Bearer SEU_TOKEN_JWT
 | Método | Endpoint | Descrição | Acesso |
 | --- | --- | --- | --- |
 | GET | `/api/Product` | Lista os produtos | Autenticado |
-| GET | `/api/Product/paged` | Lista produtos com paginação | Autenticado |
+| GET | `/api/Product/paged` | Lista produtos com paginação e ordenação | Autenticado |
 | GET | `/api/Product/{id}` | Busca um produto por ID | Autenticado |
 | GET | `/api/Product/category/{categoryId}` | Lista produtos de uma categoria | Autenticado |
 | GET | `/api/Product/status/{status}` | Lista produtos por status | Autenticado |
 | POST | `/api/Product` | Cria um produto | ADMIN |
 | PUT | `/api/Product/{id}` | Atualiza um produto | ADMIN |
 | DELETE | `/api/Product/{id}` | Remove um produto | ADMIN |
+
+### Paginação e ordenação de produtos
+
+O endpoint:
+
+```http
+GET /api/Product/paged
+```
+
+aceita os seguintes parâmetros:
+
+| Parâmetro | Descrição | Padrão |
+| --- | --- | --- |
+| `page` | Número da página | `1` |
+| `pageSize` | Quantidade de registros por página | `10` |
+| `sortBy` | Campo utilizado na ordenação | `id` |
+| `sortDirection` | Direção da ordenação (`asc` ou `desc`) | `asc` |
+
+Campos aceitos em `sortBy`:
+
+```txt
+id
+name
+price
+stock
+createdAt
+```
+
+Exemplo:
+
+```http
+GET /api/Product/paged?page=1&pageSize=10&sortBy=price&sortDirection=desc
+```
+
+O valor de `pageSize` deve estar entre `1` e `100`.
+
+Parâmetros de paginação ou ordenação inválidos retornam `400 Bad Request`.
+
+Além da paginação, a API permite filtros por categoria e status:
+
+```http
+GET /api/Product/category/{categoryId}
+GET /api/Product/status/{status}
+```
 
 ### Cart
 
@@ -401,6 +487,14 @@ Bearer SEU_TOKEN_JWT
 | PUT | `/api/Order/{id}/deliver` | Marca um pedido como entregue | ADMIN |
 | PUT | `/api/Order/{id}/cancel` | Cancela um pedido | Autenticado |
 
+### Product NoSQL
+
+| Método | Endpoint | Descrição | Acesso |
+| --- | --- | --- | --- |
+| GET | `/api/nosql/products` | Lista os produtos armazenados no MongoDB | Autenticado |
+| GET | `/api/nosql/products/{productId}` | Busca um produto do MongoDB pelo identificador | Autenticado |
+| GET | `/api/nosql/products/status/{status}` | Lista produtos do MongoDB por status | Autenticado |
+
 ### Ciclo de vida do pedido
 
 ```txt
@@ -422,6 +516,53 @@ CANCELLED
 ```
 
 Durante o checkout, a API cria o pedido, registra seus itens, atualiza o estoque e finaliza o carrinho utilizado na compra.
+
+---
+
+## 🔗 HATEOAS
+
+Os endpoints de consulta da API utilizam **HATEOAS (Hypermedia as the Engine of Application State)**.
+
+Os recursos consultados podem ser retornados juntamente com links que indicam operações e navegações relacionadas ao recurso.
+
+Exemplo:
+
+```json
+{
+  "data": {
+    "id": 1,
+    "name": "Produto"
+  },
+  "links": [
+    {
+      "rel": "self",
+      "href": "/api/Product/1",
+      "method": "GET"
+    },
+    {
+      "rel": "all-products",
+      "href": "/api/Product",
+      "method": "GET"
+    }
+  ]
+}
+```
+
+A implementação de HATEOAS está presente nos endpoints de consulta de:
+
+- produtos;
+- categorias;
+- carrinhos;
+- pedidos;
+- produtos armazenados no MongoDB.
+
+As estruturas compartilhadas utilizadas para representar os recursos e links estão localizadas em:
+
+```txt
+Vitalia.API/Hateoas/
+├── HateoasLink.cs
+└── HateoasResource.cs
+```
 
 ---
 
@@ -472,6 +613,8 @@ A documentação permite:
 - visualizar os endpoints;
 - consultar parâmetros e modelos;
 - testar requisições;
+- visualizar paginação, ordenação e filtros;
+- visualizar os modelos HATEOAS;
 - informar JWT Bearer pelo botão **Authorize**;
 - visualizar os principais códigos de resposta HTTP.
 
@@ -542,6 +685,32 @@ Error
 
 O `TraceId` permite correlacionar a requisição registrada pelo Serilog com o trace criado pelo OpenTelemetry.
 
+### Persistência dos logs
+
+Além da saída no console, o Serilog grava logs em arquivos utilizando rotação diária.
+
+Os arquivos são gerados em:
+
+```txt
+Vitalia.API/logs/vitalia-AAAA-MM-DD.log
+```
+
+A configuração utiliza:
+
+- rotação diária;
+- retenção dos últimos 7 arquivos;
+- logging estruturado;
+- enriquecimento com informações da aplicação;
+- saída simultânea no console e em arquivo.
+
+A pasta:
+
+```txt
+Vitalia.API/logs/
+```
+
+não é versionada pelo Git.
+
 ---
 
 ## 📊 OpenTelemetry e Prometheus
@@ -602,7 +771,7 @@ Essas métricas podem ser utilizadas para acompanhar tempo de resposta, volume d
 
 ## 🗄️ Banco de Dados e Migrations
 
-A aplicação utiliza **Oracle Database** com **Entity Framework Core**.
+A aplicação utiliza **Oracle Database** com **Entity Framework Core** para persistência relacional.
 
 O `VitaliaDbContext` gerencia as tabelas comerciais relacionadas a:
 
@@ -649,6 +818,51 @@ dotnet ef database update \
 ```
 
 > **Atenção:** caso o schema Oracle já possua as tabelas criadas, verifique o estado do banco antes de executar `database update` para evitar conflito com objetos já existentes.
+
+---
+
+## 🍃 MongoDB
+
+Além do Oracle Database, o projeto possui integração com **MongoDB** utilizando o driver oficial `MongoDB.Driver`.
+
+O banco NoSQL utilizado é:
+
+```txt
+vitalia
+```
+
+A coleção consultada pelo módulo comercial é:
+
+```txt
+products
+```
+
+A integração foi implementada utilizando o **Repository Pattern**, mantendo o acesso ao MongoDB isolado da camada de API.
+
+### Endpoints NoSQL
+
+| Método | Endpoint | Descrição | Acesso |
+| --- | --- | --- | --- |
+| GET | `/api/nosql/products` | Lista os produtos armazenados no MongoDB | Autenticado |
+| GET | `/api/nosql/products/{productId}` | Consulta um produto pelo identificador | Autenticado |
+| GET | `/api/nosql/products/status/{status}` | Filtra produtos MongoDB por status | Autenticado |
+
+Os endpoints de consulta NoSQL também retornam recursos utilizando HATEOAS.
+
+### Configuração local
+
+Exemplo de configuração de desenvolvimento:
+
+```json
+{
+  "MongoDb": {
+    "ConnectionString": "mongodb://localhost:27017",
+    "DatabaseName": "vitalia"
+  }
+}
+```
+
+É necessário possuir uma instância do MongoDB disponível e a coleção `products` carregada para utilizar os endpoints NoSQL.
 
 ---
 
@@ -701,13 +915,32 @@ dotnet user-secrets set \
 
 > O valor do segredo JWT não deve ser versionado no Git. A API .NET precisa utilizar o segredo compatível com o token emitido pelo backend Java do Vitalia.
 
-### 5. Compilar
+### 5. Configurar o MongoDB
+
+Com uma instância local do MongoDB em execução, utilize:
+
+```json
+{
+  "MongoDb": {
+    "ConnectionString": "mongodb://localhost:27017",
+    "DatabaseName": "vitalia"
+  }
+}
+```
+
+A collection utilizada é:
+
+```txt
+products
+```
+
+### 6. Compilar
 
 ```bash
 dotnet build
 ```
 
-### 6. Executar a API
+### 7. Executar a API
 
 ```bash
 dotnet run \
@@ -749,6 +982,20 @@ Os testes de domínio e aplicação utilizam:
 - padrão Arrange / Act / Assert;
 - nomes de testes descritivos seguindo o cenário e o resultado esperado.
 
+Entre os comportamentos de domínio testados estão:
+
+- criação e atualização de produtos;
+- redução de estoque;
+- criação e atualização de categorias;
+- criação e gerenciamento do carrinho;
+- inclusão e remoção de itens do carrinho;
+- checkout e abandono de carrinhos;
+- validações de quantidade;
+- criação de itens de pedido;
+- cálculo de subtotal;
+- transições de estado dos pedidos;
+- validações de transições inválidas.
+
 ### Testes de integração
 
 Os testes de integração utilizam:
@@ -757,7 +1004,12 @@ Os testes de integração utilizam:
 - `IClassFixture`;
 - banco em memória para isolamento;
 - autenticação JWT de teste;
-- validação de cenários de sucesso, autenticação e erros HTTP.
+- validação de cenários de sucesso;
+- validação de autenticação e autorização;
+- validação de erros HTTP;
+- fluxo comercial de carrinho, checkout e pedido;
+- Health Checks;
+- Swagger / OpenAPI.
 
 Para executar toda a suíte:
 
@@ -768,8 +1020,8 @@ dotnet test
 Resultado atual da suíte:
 
 ```txt
-Total: 69
-Sucesso: 69
+Total: 91
+Sucesso: 91
 Falhas: 0
 Ignorados: 0
 ```
@@ -784,23 +1036,26 @@ Para gerar os relatórios de cobertura:
 dotnet test --collect:"XPlat Code Coverage"
 ```
 
-Os relatórios são gerados dentro das pastas `TestResults` de cada projeto de teste.
+Os relatórios no formato Cobertura são gerados dentro das pastas `TestResults` de cada projeto de testes.
 
-Cobertura de linhas observada nos relatórios individuais:
+Resultados atuais:
 
-| Projeto | Cobertura de linhas |
-| --- | ---: |
-| Vitalia.Domain.Tests | 22,99% |
-| Vitalia.Application.Tests | 73,39% |
-| Vitalia.API.IntegrationTests | 41,99% |
+| Projeto | Linhas | Branches |
+| --- | ---: | ---: |
+| Vitalia.Domain.Tests | **92,51%** | **86,36%** |
+| Vitalia.Application.Tests | **72,92%** | **74,52%** |
+| Vitalia.API.IntegrationTests | **39,80%** | **16,66%** |
 
-A consolidação das linhas únicas presentes nos relatórios Cobertura resultou em aproximadamente:
+A cobertura de domínio foi ampliada através de testes específicos para:
 
-```txt
-45,28% de cobertura de linhas
-```
+- `Product`;
+- `Category`;
+- `Cart`;
+- `CartItem`;
+- `Order`;
+- `OrderItem`.
 
-> A porcentagem consolidada foi calculada a partir dos relatórios Cobertura gerados pelos projetos de teste e não representa um merge oficial do Coverlet.
+A camada `Application` possui cobertura dos serviços e regras de aplicação, enquanto os testes de integração validam o comportamento da API HTTP e dos principais fluxos comerciais.
 
 ---
 
@@ -841,7 +1096,9 @@ http://localhost:8080
 - CRUD de produtos;
 - rotas parametrizadas;
 - paginação de produtos;
+- ordenação de produtos;
 - filtros por categoria e status;
+- HATEOAS nos endpoints de consulta;
 - gerenciamento de carrinho;
 - adição, atualização e remoção de itens;
 - checkout;
@@ -853,6 +1110,9 @@ http://localhost:8080
 - Oracle Database;
 - Entity Framework Core;
 - migrations;
+- MongoDB;
+- MongoDB.Driver;
+- consultas NoSQL de produtos;
 - Repository Pattern;
 - Service Layer;
 - injeção de dependência;
@@ -861,12 +1121,16 @@ http://localhost:8080
 - Swagger / OpenAPI;
 - Health Checks;
 - Serilog;
+- logs persistidos em arquivo;
+- rotação diária dos arquivos de log;
+- retenção dos últimos 7 arquivos;
 - correlação por `TraceId` e `RequestId`;
 - OpenTelemetry;
 - métricas Prometheus;
 - testes unitários;
 - testes de integração;
 - fixtures com xUnit;
+- padrão Arrange / Act / Assert;
 - cobertura com Coverlet;
 - Docker.
 
@@ -884,5 +1148,3 @@ A API do módulo comercial do Vitalia está publicada no **Render** e pode ser a
 | 💚 **Liveness** | https://vitalia-dotnet.onrender.com/health/live |
 | ✅ **Readiness** | https://vitalia-dotnet.onrender.com/health/ready |
 | 📊 **Métricas Prometheus** | https://vitalia-dotnet.onrender.com/metrics |
-
-> ℹ️ O serviço está hospedado no plano gratuito do Render. Após um período de inatividade, a primeira requisição pode levar alguns segundos para responder enquanto a instância é reativada.
