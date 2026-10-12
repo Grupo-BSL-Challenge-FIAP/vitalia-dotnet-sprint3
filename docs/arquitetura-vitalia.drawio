@@ -33,9 +33,6 @@
         <mxCell id="46jbkGfb4WN4TLZ1gYw6-10" edge="1" parent="1" source="46jbkGfb4WN4TLZ1gYw6-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="46jbkGfb4WN4TLZ1gYw6-9">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="46jbkGfb4WN4TLZ1gYw6-12" edge="1" parent="1" source="46jbkGfb4WN4TLZ1gYw6-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="46jbkGfb4WN4TLZ1gYw6-11">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
         <mxCell id="46jbkGfb4WN4TLZ1gYw6-7" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fad7ac;strokeColor=#b46504;align=center;" value="&lt;span style=&quot;font-size: 16px;&quot;&gt;Vitalia.Application&lt;/span&gt;&lt;br&gt;&lt;div style=&quot;text-align: left;&quot;&gt;&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;Services / DTOs&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;Interfaces&lt;/div&gt;" vertex="1">
           <mxGeometry height="99" width="165" x="530" y="647" as="geometry" />
         </mxCell>
@@ -49,6 +46,9 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="XFJS2lca5dgT7bMcl0M_-1" edge="1" parent="1" source="46jbkGfb4WN4TLZ1gYw6-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=light-dark(#FFFFFF,#FFFFFF);" target="46jbkGfb4WN4TLZ1gYw6-13" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="IYrEbOVKaAnjqx29LFAl-1" edge="1" parent="1" source="46jbkGfb4WN4TLZ1gYw6-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;dashed=1;strokeColor=#FFFFFF;" target="46jbkGfb4WN4TLZ1gYw6-7">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="46jbkGfb4WN4TLZ1gYw6-11" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fad7ac;strokeColor=#b46504;align=center;" value="&lt;div style=&quot;text-align: left;&quot;&gt;&lt;span style=&quot;font-size: 16px;&quot;&gt;&amp;nbsp; &amp;nbsp; Vitalia.Infrastructure&lt;br&gt;&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;Repositories&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;Entity Framework Core&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;MongoDb Driver&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;Migratios&lt;/span&gt;&lt;/div&gt;" vertex="1">
@@ -95,6 +95,9 @@
         </mxCell>
         <mxCell id="46jbkGfb4WN4TLZ1gYw6-22" parent="XFJS2lca5dgT7bMcl0M_-9" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;pre dir=&quot;ltr&quot;&gt;&lt;div&gt;&lt;pre dir=&quot;ltr&quot;&gt;&lt;code&gt;Health Checks&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2&gt;&lt;/h2&gt;&lt;/pre&gt;" vertex="1">
           <mxGeometry height="30" width="60" x="42" y="133" as="geometry" />
+        </mxCell>
+        <mxCell id="IYrEbOVKaAnjqx29LFAl-2" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(255, 255, 255);&quot;&gt;Implementa contratos&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="130.71" x="806" y="692" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
