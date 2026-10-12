@@ -374,21 +374,24 @@ public class ApiIntegrationTests
         var updatedJson =
             await ReadJsonAsync(updatedResponse);
 
+        var updatedProduct =
+            updatedJson.GetProperty("data");
+
         Assert.Equal(
             "Ração Integration Atualizada",
-            updatedJson
+            updatedProduct
                 .GetProperty("name")
                 .GetString());
 
         Assert.Equal(
             120m,
-            updatedJson
+            updatedProduct
                 .GetProperty("price")
                 .GetDecimal());
 
         Assert.Equal(
             30,
-            updatedJson
+            updatedProduct
                 .GetProperty("stock")
                 .GetInt32());
 
@@ -449,12 +452,15 @@ public class ApiIntegrationTests
         var cartJson =
             await ReadJsonAsync(cartResponse);
 
+        var cartData =
+            cartJson.GetProperty("data");
+
         var cartId =
-            cartJson.GetProperty("id").GetInt64();
+            cartData.GetProperty("id").GetInt64();
 
         Assert.Equal(
             tutorUserId,
-            cartJson
+            cartData
                 .GetProperty("userId")
                 .GetInt64());
 
@@ -561,9 +567,12 @@ public class ApiIntegrationTests
         var productJson =
             await ReadJsonAsync(productResponse);
 
+        var productData =
+            productJson.GetProperty("data");
+
         Assert.Equal(
             7,
-            productJson
+            productData
                 .GetProperty("stock")
                 .GetInt32());
 
@@ -636,8 +645,11 @@ public class ApiIntegrationTests
         var finalOrderJson =
             await ReadJsonAsync(finalOrderResponse);
 
+        var finalOrderData =
+            finalOrderJson.GetProperty("data");
+
         var status =
-            finalOrderJson.GetProperty("status");
+            finalOrderData.GetProperty("status");
 
         var delivered =
             status.ValueKind switch
