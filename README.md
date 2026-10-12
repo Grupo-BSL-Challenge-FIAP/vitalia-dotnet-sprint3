@@ -8,7 +8,7 @@ API REST desenvolvida em **ASP.NET Core / .NET 10** para o módulo comercial da 
 
 A API é responsável pelo gerenciamento de **categorias, produtos, carrinho de compras, checkout e pedidos**, utilizando **Oracle Database com Entity Framework Core** para persistência relacional e **MongoDB** para operações de consulta NoSQL.
 
-A autenticação é integrada ao backend Java do Vitalia: o serviço Java emite o JWT e a API .NET valida o token localmente para identificar o usuário e suas permissões.
+A autenticação é integrada ao backend Java do Vitalia: o serviço Java autentica o usuário e emite o JWT, que é enviado pelo cliente nas requisições à API .NET. A API .NET valida o token localmente para identificar o usuário e suas permissões.
 
 ---
 
@@ -156,9 +156,9 @@ A aplicação também utiliza **Injeção de Dependência**, **Repository Patter
 
 O **Oracle Database** é utilizado como banco relacional principal do módulo comercial.
 
-O **MongoDB** é utilizado como banco NoSQL para consultas de produtos através de endpoints específicos.
+O **MongoDB Atlas** é utilizado como banco NoSQL no ambiente publicado para consultas de produtos através de endpoints específicos.
 
-A autenticação é centralizada na API Java, enquanto a API .NET valida localmente os JWTs recebidos.
+A autenticação é centralizada na API Java, enquanto a API .NET valida localmente os JWTs enviados pelo cliente.
 
 ---
 
@@ -211,6 +211,7 @@ Vitalia/
 - Entity Framework Core
 - Oracle Database
 - MongoDB
+- MongoDB Atlas
 - MongoDB.Driver
 - Swagger / OpenAPI
 - Swashbuckle
@@ -307,17 +308,25 @@ A autenticação dos usuários é responsabilidade do backend Java do Vitalia.
 O fluxo utilizado é:
 
 ```txt
-Usuário
-   ↓
+Usuário / Client
+      ↓ Login
 API Java / Auth
-   ↓
-JWT
-   ↓
+      ↓ JWT
+Usuário / Client
+      ↓ Bearer JWT
 Vitalia.API (.NET)
-   ↓
+      ↓
 Validação local do token
-   ↓
+      ↓
 Acesso aos recursos comerciais
+```
+
+A API Java autentica o usuário e retorna o JWT ao cliente.
+
+O cliente utiliza esse token nas requisições direcionadas à API .NET através do header HTTP:
+
+```http
+Authorization: Bearer SEU_TOKEN_JWT
 ```
 
 O token utiliza o identificador do usuário e suas roles para autorização.
@@ -346,7 +355,7 @@ Bearer SEU_TOKEN_JWT
 
 A autenticação do Vitalia é centralizada no backend Java.
 
-A API Java é responsável pelo cadastro dos usuários, autenticação e emissão dos tokens JWT utilizados para acessar os endpoints protegidos da API .NET.
+A API Java é responsável pelo cadastro dos usuários, autenticação e emissão dos tokens JWT utilizados pelo cliente para acessar os endpoints protegidos da API .NET.
 
 ### Ambiente publicado
 
@@ -856,6 +865,31 @@ Exemplo de configuração de desenvolvimento:
 
 É necessário possuir uma instância do MongoDB disponível e a coleção `products` carregada para utilizar os endpoints NoSQL.
 
+### Ambiente publicado
+
+No ambiente publicado no **Render**, a API utiliza um cluster hospedado no **MongoDB Atlas**.
+
+As configurações são fornecidas através das variáveis de ambiente:
+
+```txt
+MongoDb__ConnectionString
+MongoDb__DatabaseName
+```
+
+O banco utilizado é:
+
+```txt
+vitalia
+```
+
+e a collection utilizada pelo módulo comercial é:
+
+```txt
+products
+```
+
+A string de conexão do MongoDB contém credenciais e não é versionada no repositório.
+
 ---
 
 ## ⚙️ Como Executar
@@ -863,7 +897,7 @@ Exemplo de configuração de desenvolvimento:
 ### 1. Clonar o repositório
 
 ```bash
-https://github.com/Grupo-BSL-Challenge-FIAP/vitalia-dotnet-sprint4.git
+git clone https://github.com/Grupo-BSL-Challenge-FIAP/vitalia-dotnet-sprint4.git
 ```
 
 ### 2. Entrar na pasta do projeto
@@ -924,6 +958,13 @@ A collection utilizada é:
 
 ```txt
 products
+```
+
+No ambiente publicado, as configurações equivalentes são fornecidas através de:
+
+```txt
+MongoDb__ConnectionString
+MongoDb__DatabaseName
 ```
 
 ### 6. Compilar
@@ -1071,6 +1112,8 @@ docker run --rm \
   -e ASPNETCORE_ENVIRONMENT=Development \
   -e ConnectionStrings__OracleConnection="<SUA_CONNECTION_STRING>" \
   -e JWT_SECRET="<SEU_SEGREDO_JWT>" \
+  -e MongoDb__ConnectionString="<SUA_CONNECTION_STRING_MONGODB>" \
+  -e MongoDb__DatabaseName="vitalia" \
   vitalia-api
 ```
 
@@ -1079,6 +1122,8 @@ A API ficará disponível em:
 ```txt
 http://localhost:8080
 ```
+
+> As credenciais do Oracle, JWT e MongoDB não devem ser versionadas no repositório.
 
 ---
 
@@ -1103,6 +1148,7 @@ http://localhost:8080
 - Entity Framework Core;
 - migrations;
 - MongoDB;
+- MongoDB Atlas;
 - MongoDB.Driver;
 - consultas NoSQL de produtos;
 - Repository Pattern;
@@ -1140,3 +1186,19 @@ A API do módulo comercial do Vitalia está publicada no **Render** e pode ser a
 | 💚 **Liveness** | https://vitalia-dotnet.onrender.com/health/live |
 | ✅ **Readiness** | https://vitalia-dotnet.onrender.com/health/ready |
 | 📊 **Métricas Prometheus** | https://vitalia-dotnet.onrender.com/metrics |
+
+O ambiente publicado utiliza:
+
+- **Oracle Database** para persistência relacional;
+- **MongoDB Atlas** para consultas NoSQL.
+
+As configurações sensíveis são fornecidas ao Render através de variáveis de ambiente e não são versionadas no repositório.
+
+Entre as principais configurações estão:
+
+```txt
+ConnectionStrings__OracleConnection
+JWT_SECRET
+MongoDb__ConnectionString
+MongoDb__DatabaseName
+```
